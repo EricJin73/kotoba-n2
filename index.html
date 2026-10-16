@@ -208,9 +208,9 @@ mark{background:color-mix(in srgb,var(--brand) 18%,transparent);color:inherit;bo
 .tile{font-family:var(--f-jp);font-size:17px;font-weight:700;padding:9px 14px;border-radius:12px;border:2px solid var(--line);box-shadow:0 2px 0 var(--line);background:var(--surface)}
 .tile.used{visibility:hidden}
 .tile:disabled{cursor:default}
-.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.match .col{display:flex;flex-direction:column;gap:10px;min-width:0}
-.mt{padding:14px 10px;border-radius:14px;border:2px solid var(--line);box-shadow:0 2px 0 var(--line);font-weight:800;background:var(--surface);min-height:56px}
+.match{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:10px}
+.mt{padding:12px 10px;border-radius:14px;border:2px solid var(--line);box-shadow:0 2px 0 var(--line);font-weight:800;background:var(--surface);min-height:64px;
+  display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.35;overflow-wrap:anywhere}
 .mt.jp{font-size:19px;font-weight:700}
 .mt.sel{border-color:var(--brand);background:var(--brand-soft)}
 .mt.ok{border-color:var(--good);background:var(--good-soft);color:var(--good);opacity:.65;cursor:default}
@@ -238,6 +238,12 @@ mark{background:color-mix(in srgb,var(--brand) 18%,transparent);color:inherit;bo
 .foot-in .btn{min-width:150px}
 
 .done-screen{text-align:center;align-items:center}
+.nextcard{width:100%;display:flex;align-items:center;gap:14px;text-align:left;border:2px solid var(--line);border-radius:16px;padding:14px 16px}
+.nextcard .lt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.nextcard .lt b{font-size:18px}
+.nextcard .lt span:last-child{color:var(--muted);font-size:13px}
+.choices{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:10px}
+.choices .btn{width:100%;padding-block:15px}
 .badge{width:110px;height:110px;border-radius:32px;background:var(--good);color:#fff;display:grid;place-items:center;margin:20px auto 0;box-shadow:0 6px 0 color-mix(in srgb,var(--good) 70%,#000)}
 .badge svg{width:56px;height:56px}
 .done-screen h2{font-size:28px;font-weight:900}
@@ -879,9 +885,12 @@ function exHTML(s){
    case 'order':{const p=s.g.order[1];return `<div class="ex"><div class="eyebrow">组句</div><p class="q">把词块排成正确的句子</p><p style="color:var(--muted);font-weight:700">${s.g.order[0]}</p>
      <div class="zone" id="zone">${s.sel.map((i,k)=>`<button class="tile" data-un="${k}">${p[i]}</button>`).join('')}</div>
      <div class="bank">${s.bank.map(i=>`<button class="tile ${s.sel.includes(i)?'used':''}" data-bank="${i}">${p[i]}</button>`).join('')}</div></div>`}
-   case 'match':return `<div class="ex"><div class="eyebrow">配对</div><p class="q">把单词和意思连起来</p><div class="match">
-     <div class="col">${s.left.map((x,i)=>`<button class="mt jp ${s.ok.includes(x.w)?'ok':''} ${s.pl===i?'sel':''}" data-ml="${i}" ${s.ok.includes(x.w)?'disabled':''}>${x.w}</button>`).join('')}</div>
-     <div class="col">${s.right.map((m,i)=>{const ok=s.ok.some(w=>WMAP[w].m===m);return `<button class="mt ${ok?'ok':''} ${s.pr===i?'sel':''}" data-mr="${i}" ${ok?'disabled':''}>${m}</button>`}).join('')}</div></div></div>`;
+   case 'match':{
+     /* one grid, left/right interleaved per row, so every box in a row (and every row) has the same height */
+     const lb=(x,i)=>`<button class="mt jp ${s.ok.includes(x.w)?'ok':''} ${s.pl===i?'sel':''}" data-ml="${i}" ${s.ok.includes(x.w)?'disabled':''}>${x.w}</button>`;
+     const rb=(m,i)=>{const ok=s.ok.some(w=>WMAP[w].m===m);return `<button class="mt ${ok?'ok':''} ${s.pr===i?'sel':''}" data-mr="${i}" ${ok?'disabled':''}>${m}</button>`};
+     return `<div class="ex"><div class="eyebrow">配对</div><p class="q">把单词和意思连起来</p><div class="match">
+     ${s.left.map((x,i)=>lb(x,i)+rb(s.right[i],i)).join('')}</div></div>`}
   }
 }
 function showEx(){
@@ -894,7 +903,7 @@ function showEx(){
 }
 function canCheck(s){if(s.t==='order')return s.sel.length===s.g.order[1].length;return s.sel!=null}
 function foot(state,detail){
-  const f=$('#lx-foot'),s=L.cur;f.className='lx-foot';
+  const f=$('#lx-foot'),s=L.cur;f.className='lx-foot';f.hidden=false;
   if(state==='ok'||state==='no'){
     f.classList.add(state);
     f.innerHTML=`<div class="foot-in"><div class="fb"><span class="${state==='ok'?'ok-ic':'bad-ic'}">${state==='ok'?I.check:I.x}</span><div style="min-width:0"><b>${state==='ok'?['答对了！','太棒了！','完全正确！'][Math.random()*3|0]:'正确答案'}</b><p class="jp">${detail||''}</p></div></div>
@@ -935,7 +944,24 @@ function grade(ok){
 }
 function check(){const s=L.cur;if(s.done||!canCheck(s))return;
   const ok=s.t==='order'?s.sel.map(i=>s.g.order[1][i]).join('')===s.g.order[1].join(''):s.sel===s.ans;grade(ok)}
-function next(){L.idx++;showEx()}
+function next(){if(L.finished)return;L.idx++;showEx()}
+/* completion page: back, or go straight on (the lesson right after this one, not the first unfinished) */
+function doneChoices(){
+  const back=L.mode==='exam'?'返回真题':L.mode==='review'?'返回复习':'返回课程';
+  let nextCard='',nextBtn='';
+  if(L.mode==='lesson'){
+    const nx=LESSONS[LESSONS.indexOf(L.lesson)+1];
+    if(nx){
+      const rec=S.lessons[nx.id];
+      nextCard=`<div class="nextcard" style="--uc:var(${nx.unit.c})"><div class="glyph" aria-hidden="true">${nx.unit.glyph}</div>
+        <div class="lt"><span class="eyebrow">下一课 · 第 ${nx.n} 课${rec?.done?' · 已学过':''}</span><b class="jp">${nx.title}</b><span>${nx.zh} · ${nx.g.p}</span></div></div>`;
+      nextBtn=`<button class="btn btn-primary" data-start="${nx.id}">下一课</button>`;
+    }else nextCard=`<p class="note">这是最后一课，全部课程都走完了。</p>`;
+  }
+  if(L.mode==='exam'&&L.exam.key.length===1)nextBtn=`<button class="btn btn-primary" data-exam="${L.exam.key}">再练 10 题</button>`;
+  if(L.mode==='review')nextBtn=`<button class="btn btn-primary" data-act="startReview">再复习一组</button>`;
+  return `${nextCard}<div class="choices"><button class="btn btn-ghost" data-act="close">${back}</button>${nextBtn}</div>`;
+}
 function finish(){
   const acc=L.graded?Math.round(L.right/L.graded*100):100;
   let bonus=0;const newW=L.newWords;
@@ -951,10 +977,9 @@ function finish(){
     <h2>${L.mode==='lesson'?'第 '+L.lesson.n+' 课完成！':L.mode==='exam'?'练习完成！':'复习完成！'}</h2>
     <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.g.p}`:L.mode==='exam'?L.exam.title:'记忆强度已更新'}</p>
     <div class="tiles"><div><b class="num" style="color:var(--sun)">+${gained}</b><span>XP</span></div><div><b class="num" style="color:var(--good)">${acc}%</b><span>正确率</span></div><div><b class="num" style="color:var(--brand)">${L.mode==='lesson'?newW:L.graded}</b><span>${L.mode==='lesson'?'新单词':'作答次数'}</span></div></div>
-    <p style="color:var(--muted);font-size:13px" class="num">连续学习 ${streak()} 天 · 今日 ${todayXP()}/${S.goal} XP</p></div>`;
-  const nx=nextLesson();
-  $('#lx-foot').className='lx-foot';
-  $('#lx-foot').innerHTML=`<div class="foot-in"><button class="btn btn-ghost" data-act="close">${L.mode==='exam'?'返回真题':'返回课程'}</button>${L.mode==='lesson'&&nx?`<button class="btn btn-primary" data-start="${nx.id}">下一课</button>`:L.mode==='exam'&&L.exam.key.length===1?`<button class="btn btn-primary" data-exam="${L.exam.key}">再练 10 题</button>`:''}</div>`;
+    <p style="color:var(--muted);font-size:13px" class="num">连续学习 ${streak()} 天 · 今日 ${todayXP()}/${S.goal} XP</p>
+    ${doneChoices()}</div>`;
+  $('#lx-foot').className='lx-foot';$('#lx-foot').innerHTML='';$('#lx-foot').hidden=true;
   L.finished=true;
 }
 
@@ -1006,7 +1031,7 @@ $('#sheet-stay').addEventListener('click',e=>{e.stopPropagation();$('#lx-sheet')
 $('#sheet-quit').addEventListener('click',e=>{e.stopPropagation();closeSession()});
 document.addEventListener('keydown',e=>{
   if(!L||$('#lx-sheet').hidden===false)return;
-  if(e.key==='Enter'){const b=$('#lx-foot [data-act="next"]')||$('#lx-foot [data-act="check"]:not(:disabled)')||$('#lx-foot [data-start]');if(b){e.preventDefault();b.click()}return}
+  if(e.key==='Enter'){const b=$('#lx-foot [data-act="next"]')||$('#lx-foot [data-act="check"]:not(:disabled)')||$('#lx-body .choices .btn-primary')||$('#lx-body .choices .btn');if(b){e.preventDefault();b.click()}return}
   if(/^[1-4]$/.test(e.key)){const b=document.querySelector(`#lx-body .opt[data-opt="${+e.key-1}"]`);if(b&&!b.disabled)b.click()}
   if(e.key==='Escape')$('#lx-close').click();
 });
