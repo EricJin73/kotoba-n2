@@ -270,6 +270,33 @@ mark{background:color-mix(in srgb,var(--brand) 18%,transparent);color:inherit;bo
   .foot-in .btn{width:100%}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* 真题 */
+.part-h{display:flex;flex-direction:column;gap:2px;padding-top:12px;border-top:2px dashed var(--line)}
+.part-h h2{font-size:22px;font-weight:900}
+.part-h p{color:var(--muted);font-size:14px}
+.xtag{display:inline-block;font-size:11px;font-weight:900;color:var(--sun);background:color-mix(in srgb,var(--sun) 16%,var(--surface));border-radius:6px;padding:0 6px}
+.xchip{display:inline-block;font-size:12px;font-weight:800;color:var(--muted);background:var(--sunk);border-radius:999px;padding:3px 10px}
+.wcard .xchip{margin-top:-4px}
+.note{color:var(--muted);font-size:13px;max-width:65ch}
+.xsec{display:flex;flex-direction:column;gap:12px}
+.xh{font-size:18px;font-weight:900}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:12px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px}
+.tcard-h b{font-size:18px;display:block}
+.tcard-h span{color:var(--muted);font-size:13px;font-weight:700}
+.tcard p{font-size:13px;color:var(--muted)}
+.tcard-f{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:auto}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:10px}
+.ylist{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.yrow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:13px 16px;border-top:1px solid var(--line);text-align:left}
+.yrow:first-child{border-top:0}
+.yrow:hover{background:var(--sunk)}
+.ylabel{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.ylabel span{color:var(--muted);font-size:13px;font-weight:700}
+.opt.long{font-size:15px;font-weight:500;align-items:flex-start;line-height:1.7}
+.opt.long .k{margin-top:2px}
+.opt u{text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:var(--brand)}
+.sent.big{font-size:30px;text-align:center}
 body{margin:0}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
@@ -302,6 +329,7 @@ body{margin:0}
 </div>
 <div class="toast" id="toast" hidden></div>
 
+<script src="exam-data.js"></script>
 <script>
 /* ---------- content: JLPT N2 ---------- */
 const UNITS=[
@@ -401,6 +429,28 @@ const UNITS=[
     ex:[['引き受けた＿＿、最後まで責任を持ってやります。','既然接下了，就负责到底。'],['日本に住む＿＿、地震への備えは欠かせない。','既然住在日本，防震准备就必不可少。']],
     order:['既然决定参赛，就想拿冠军。',['出場する','からには','優勝を','目指したい。']]}}]}
 ];
+/* ---------- 真题考点 (exam-data.js) ---------- */
+const TYPES={R:['漢字読み','汉字读音'],H:['表記','汉字书写'],K:['語形成','前缀・后缀'],C:['文脈規定','语境填空'],P:['言い換え類義','近义替换'],U:['用法','用法判断'],G:['文法形式','语法选择']};
+const YF=y=>'20'+y.replace('.','年')+'月';
+const EXV={};
+(window.EXAM_V||'').trim().split('\n').forEach(line=>{
+  const f=line.split('|');if(f.length<5)return;
+  const [w,r,m,pos,tags,syn='',hk='',ex='',exz='']=f;
+  const e=EXV[w]||(EXV[w]={w,r,m,pos,tags:[],syn:'',hk:[],ex:'',exz:''});
+  tags.trim().split(/\s+/).forEach(t=>e.tags.push({t:t[0],y:t.slice(1)}));
+  if(syn&&!e.syn)e.syn=syn;if(hk&&!e.hk.length)e.hk=hk.split(',');if(ex&&!e.ex){e.ex=ex;e.exz=exz}
+});
+const EXK=(window.EXAM_K||'').trim().split('\n').filter(Boolean).map(line=>{const [a,w,r,m,ys,d,ex='',exz='']=line.split('|');return {a,w,r,m,ys:ys.split(' '),d:d.split(','),ex,exz}});
+const KMAP=Object.fromEntries(EXK.map(k=>[k.w,k]));
+const EXG=(window.EXAM_G||[]).map(g=>({...g,ys:g.y.split(' ')}));
+const GMAP=Object.fromEntries(EXG.map(g=>[g.id,g]));
+const BASE_Y={'わけにはいかない':'13.7 18.7','に応じて':'10.7','ものの':'15.7','おそれがある':'17.7','たびに':'13.7'};
+UNITS.forEach(u=>u.lessons.forEach(l=>{if(BASE_Y[l.g.k])l.g.ys=BASE_Y[l.g.k].split(' ')}));
+(window.EXAM_UNITS||[]).forEach(u=>UNITS.push({glyph:u.glyph,title:u.title,zh:u.zh,c:u.c,exam:true,lessons:u.lessons.map(l=>{
+  const g=GMAP[l.g];g.inLesson=true;
+  return {title:l.title,zh:l.zh,words:l.w.split(' ').map(w=>{const e=EXV[w]||KMAP[w];return [w,e.r,e.m,e.ex,e.exz]}),
+    g:{p:g.p,k:g.k,m:g.m,f:g.f,ex:g.ex,order:g.order,ys:g.ys}}})}));
+
 let lid=0;
 UNITS.forEach((u,ui)=>{u.ui=ui;u.lessons.forEach((l,li)=>{
   l.id='L'+(++lid);l.n=lid;l.unit=u;l.li=li;
@@ -411,6 +461,61 @@ const LESSONS=UNITS.flatMap(u=>u.lessons);
 const WORDS=LESSONS.flatMap(l=>l.words);
 const WMAP=Object.fromEntries(WORDS.map(w=>[w.w,w]));
 const GRAMS=LESSONS.map(l=>l.g);
+const ALLK=[...new Set([...GRAMS,...EXG].map(g=>g.k))];
+
+/* drill pools per question type */
+const posG=p=>p==='s'?'n':p;
+const EXL=Object.values(EXV);
+const has=(e,t)=>e.tags.some(x=>x.t===t);
+const POOL={
+  R:EXL.filter(e=>has(e,'R')),
+  H:EXL.filter(e=>has(e,'H')&&e.hk.length===3),
+  K:EXK,
+  C:EXL.filter(e=>has(e,'C')&&e.ex.includes(e.w)),
+  P:EXL.filter(e=>has(e,'P')&&e.syn),
+  U:EXL.filter(e=>has(e,'U')&&e.ex.includes(e.w)&&e.pos!=='adv'),
+  G:[...GRAMS.filter(g=>g.ys&&!EXG.some(x=>x.k===g.k&&x.inLesson)),...EXG]
+};
+function examTags(w){
+  const e=EXV[w],k=KMAP[w];
+  if(e)return e.tags.map(t=>`${YF(t.y)} ${TYPES[t.t][0]}`);
+  if(k)return k.ys.map(y=>`${YF(y)} ${TYPES.K[0]}`);
+  return [];
+}
+const examChip=w=>{const t=examTags(w);return t.length?`<span class="xchip">真题 · ${t.slice(0,2).join('　')}</span>`:''};
+
+/* 读音干扰项：长音、浊音、促音的常见混淆 */
+const DAK={か:'が',き:'ぎ',く:'ぐ',け:'げ',こ:'ご',さ:'ざ',し:'じ',す:'ず',せ:'ぜ',そ:'ぞ',た:'だ',て:'で',と:'ど',は:'ば',ひ:'び',ふ:'ぶ',へ:'べ',ほ:'ぼ'};
+const UNDAK=Object.fromEntries(Object.entries(DAK).map(([a,b])=>[b,a]));
+function readingTraps(w,r){
+  let ok=0;while(ok<w.length&&ok<r.length&&w[w.length-1-ok]===r[r.length-1-ok])ok++;
+  const SWAP={ち:'じ',じ:'ち',ゃ:'ょ',ょ:'ゃ',ゅ:'ょ'};
+  const mut=str=>{
+    const a=[...str],end=a.length-ok,out=new Set();
+    const put=arr=>{const s=arr.join('');if(s&&s!==r)out.add(s)};
+    for(let i=0;i<end;i++){
+      const c=a[i],n=a[i+1];
+      if(DAK[c])put([...a.slice(0,i),DAK[c],...a.slice(i+1)]);
+      if(UNDAK[c])put([...a.slice(0,i),UNDAK[c],...a.slice(i+1)]);
+      if(SWAP[c]&&!(SWAP[c]==='ゃ'&&n==='う'))put([...a.slice(0,i),SWAP[c],...a.slice(i+1)]);
+      if(n==='う'&&i+1<end)put([...a.slice(0,i+1),...a.slice(i+2)]);
+      else if(/[こそとのほもよろごぞどぼょゅくすつぬふむゆるぐずぶ]/.test(c)&&n!=='う'&&n!=='ゃ'&&n!=='ゅ'&&n!=='ょ')put([...a.slice(0,i+1),'う',...a.slice(i+1)]);
+      if(c==='っ'){put([...a.slice(0,i),'つ',...a.slice(i+1)]);put([...a.slice(0,i),...a.slice(i+1)])}
+      else if(/[くちつき]/.test(c)&&i>0&&n&&/[かきくけこさしすせそたちつてとぱぴぷぺぽ]/.test(n))put([...a.slice(0,i),'っ',...a.slice(i+1)]);
+      if(n==='い'&&/[えけせてねへめれげぜでべ]/.test(c)&&i+1<end)put([...a.slice(0,i+1),...a.slice(i+2)]);
+    }
+    return out;
+  };
+  const one=mut(r);
+  let list=shuffle([...one]);
+  if(list.length<3)list=list.concat(shuffle([...new Set([...one].flatMap(m=>[...mut(m)]))].filter(x=>!list.includes(x))));
+  if(list.length<3){
+    const near=POOL.R.map(e=>e.r).filter(x=>x!==r&&!list.includes(x))
+      .map(x=>[x,Math.abs(x.length-r.length)*2+(x[0]===r[0]?0:1)+Math.random()]).sort((p,q)=>p[1]-q[1]).map(p=>p[0]);
+    list=list.concat(near);
+  }
+  return list.slice(0,3);
+}
 
 /* ---------- icons ---------- */
 const I={
@@ -422,7 +527,8 @@ const I={
  sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
- play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
+ play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+ exam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9.5 12.5l2 2 3.5-4M9.5 18h6"/></svg>'
 };
 
 /* ---------- state ---------- */
@@ -436,7 +542,8 @@ function streak(){const d=new Date();let n=0;if(!S.days[dk(d)])d.setDate(d.getDa
 const learned=()=>Object.keys(S.words).filter(w=>WMAP[w]);
 const nextLesson=()=>LESSONS.find(l=>!S.lessons[l.id]?.done);
 let tab='learn';
-try{const h=location.hash.slice(1);if(['learn','review','grammar','me'].includes(h))tab=h}catch(e){}
+try{const h=location.hash.slice(1);if(['learn','exam','review','grammar','me'].includes(h))tab=h}catch(e){}
+if(!S.exam)S.exam={};
 
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -460,7 +567,7 @@ function say(t,rate=.92){
 
 /* ---------- home views ---------- */
 function renderNav(){
-  const items=[['learn','学习',I.book],['review','复习',I.cards],['grammar','语法',I.gram],['me','我的',I.user]];
+  const items=[['learn','学习',I.book],['exam','真题',I.exam],['review','复习',I.cards],['grammar','语法',I.gram],['me','我的',I.user]];
   $('#nav').innerHTML=`<div class="logo"><div class="logo-mark">道</div><div><b>ことば道</b><small>JLPT N2</small></div></div>`+
    items.map(([k,t,ic])=>`<button class="nav-btn ${k==='me'?'nav-me':''}" data-tab="${k}" ${tab===k?'aria-current="page"':''}>${ic}<span>${t}</span></button>`).join('');
 }
@@ -496,10 +603,11 @@ function renderLearn(){
     <div class="stat"><b class="num" style="color:var(--sun)">${streak()} 天</b><span>连续学习</span></div>
     <div class="stat"><b class="num">${todayXP()}/${S.goal}</b><span>今日 XP</span></div>
     <div class="stat"><b class="num">${learned().length}</b><span>已学单词</span></div></div>`;
-  const units=UNITS.map(u=>{
+  const firstExam=UNITS.findIndex(u=>u.exam);
+  const units=UNITS.map((u,i)=>{
     const dn=u.lessons.filter(l=>S.lessons[l.id]?.done).length;
-    return `<section class="unit" style="--uc:var(${u.c})">
-      <div class="unit-h"><div class="glyph" aria-hidden="true">${u.glyph}</div><div><p>第 ${u.ui+1} 单元</p><h3>${u.title}</h3><p>${u.zh}</p></div><span class="uprog num">${dn}/${u.lessons.length} 课</span></div>
+    return `${i===firstExam?`<div class="part-h"><div class="eyebrow">第二部分</div><h2>真题高频</h2><p>单词和语法全部来自 2010–2020 年 N2 真题考点，按词性分组。</p></div>`:''}<section class="unit" style="--uc:var(${u.c})">
+      <div class="unit-h"><div class="glyph" aria-hidden="true">${u.glyph}</div><div><p>第 ${u.ui+1} 单元${u.exam?' · <span class="xtag">真题</span>':''}</p><h3>${u.title}</h3><p>${u.zh}</p></div><span class="uprog num">${dn}/${u.lessons.length} 课</span></div>
       <div class="lessons">${u.lessons.map(l=>{
         const rec=S.lessons[l.id],done=rec?.done,isNext=nx&&nx.id===l.id;
         return `<button class="lrow ${done?'done':''} ${isNext?'next':''}" data-start="${l.id}">
@@ -520,19 +628,54 @@ function renderReview(){
      <div class="str ${s<3?'weak':''}" aria-label="记忆强度 ${s}/4">${[0,1,2,3].map(i=>`<i class="${i<s?'on':''}"></i>`).join('')}</div>
      ${sayBtn(w.w)}</div>`}).join('')}</div>`;
 }
-function renderGrammar(){
-  return `<div class="page-h"><div><h1>N2 语法</h1><p>${GRAMS.length} 个核心句型，学完对应课程后标记为已学</p></div></div>`+
-   GRAMS.map(g=>{const d=S.lessons[g.lesson.id]?.done;return `<article class="gcard" style="--uc:var(${g.lesson.unit.c})">
-     <div class="gcard-h"><h3>${g.p}</h3><span class="tag ${d?'tag-done':'tag-new'}">${d?'已学':'第 '+g.lesson.n+' 课'}</span></div>
+const yearChips=ys=>ys&&ys.length?`<span class="xchip">真题 · ${ys.map(YF).join('、')}</span>`:'';
+function gcardHTML(g,status){
+  return `<article class="gcard">
+     <div class="gcard-h"><h3>${g.p}</h3>${status}${yearChips(g.ys)}</div>
      <p class="m">${g.m}</p>
      <div class="form"><span>接续</span><span class="jp">${g.f}</span></div>
      ${g.ex.map(e=>`<div class="gex">${sayBtn(e[0].replace('＿＿',g.k))}<div><p class="jp">${fillG(e[0],g.k)}</p><p class="zh">${e[1]}</p></div></div>`).join('')}
-   </article>`}).join('');
+   </article>`;
+}
+function renderGrammar(){
+  const extra=EXG.filter(g=>!g.inLesson);
+  return `<div class="page-h"><div><h1>N2 语法</h1><p>${GRAMS.length} 个课程句型 + ${extra.length} 个真题补充句型</p></div></div>`+
+   GRAMS.map(g=>{const d=S.lessons[g.lesson.id]?.done;return gcardHTML(g,`<span class="tag ${d?'tag-done':'tag-new'}">${d?'已学':'第 '+g.lesson.n+' 课'}</span>`)}).join('')+
+   `<div class="part-h"><div class="eyebrow">真题补充</div><h2>更多考过的语法</h2><p>这些句型出现在真题的语法题里，可以在「真题 → 文法形式」中练习。</p></div>`+
+   extra.map(g=>gcardHTML(g,'')).join('');
+}
+function bestOf(key){const r=S.exam[key];return r?`<span class="tag tag-done num">最佳 ${r.best}%</span>`:`<span class="tag tag-new">未练习</span>`}
+function yearItems(y){
+  const q=[];
+  EXL.forEach(e=>e.tags.forEach(t=>{if(t.y===y&&POOL[t.t].includes(e))q.push({t:'x'+t.t.toLowerCase(),x:e,y})}));
+  EXK.forEach(k=>{if(k.ys.includes(y))q.push({t:'xk',x:k,y})});
+  POOL.G.forEach(g=>{if(g.ys.includes(y))q.push({t:'gap',g,e:g.ex[0],y})});
+  const order='rhkcpug';return q.sort((a,b)=>order.indexOf(a.t==='gap'?'g':a.t[1])-order.indexOf(b.t==='gap'?'g':b.t[1]));
+}
+function typeItems(t,n=10){
+  const pool=shuffle(POOL[t]).slice(0,n);
+  if(t==='G')return pool.map(g=>({t:'gap',g,e:g.ex[Math.random()*g.ex.length|0],y:g.ys[Math.random()*g.ys.length|0]}));
+  if(t==='K')return pool.map(k=>({t:'xk',x:k,y:k.ys[0]}));
+  return pool.map(e=>{const ts=e.tags.filter(x=>x.t===t);return {t:'x'+t.toLowerCase(),x:e,y:ts[Math.random()*ts.length|0].y}});
+}
+function renderExam(){
+  const total=EXL.length+EXK.length;
+  return `<div class="page-h"><div><h1>真题考点</h1><p>${EXAM_YEARS.length} 次 N2 真题（2010–2020）· ${total} 个词汇考点 · ${POOL.G.length} 个语法考点</p></div></div>
+  <p class="note">考点（被考到的单词、语法和年份）整理自历年真题；题目里的例句和选项均为本站重新编写，不是真题原题。</p>
+  <section class="xsec"><h2 class="xh">按题型练习</h2><div class="tgrid">
+   ${Object.keys(TYPES).map(t=>`<div class="tcard">
+     <div class="tcard-h"><b class="jp">${TYPES[t][0]}</b><span>${TYPES[t][1]}</span></div>
+     <p class="num">${POOL[t].length} 个考点</p>
+     <div class="tcard-f">${bestOf(t)}<button class="btn btn-primary btn-sm" data-exam="${t}">练习 10 题</button></div></div>`).join('')}
+  </div></section>
+  <section class="xsec"><h2 class="xh">按考试回顾</h2><p class="note">把某一次考试的全部考点做成一套练习，题量与真题的文字・词汇・语法部分相近。</p><div class="ylist">
+   ${EXAM_YEARS.slice().reverse().map(y=>`<button class="yrow" data-exam="y${y}"><span class="ylabel"><b>${YF(y)}</b><span class="num">${yearItems(y).length} 题</span></span>${bestOf('y'+y)}</button>`).join('')}
+  </div></section>`;
 }
 function renderMe(){return `<div class="page-h"><div><h1>我的学习</h1><p>JLPT N2 · 每日目标 ${S.goal} XP</p></div></div>${statsHTML(true)}`}
 function render(){
   renderNav();
-  $('#main').innerHTML=tab==='learn'?renderLearn():tab==='review'?renderReview():tab==='grammar'?renderGrammar():renderMe();
+  $('#main').innerHTML=tab==='learn'?renderLearn():tab==='exam'?renderExam():tab==='review'?renderReview():tab==='grammar'?renderGrammar():renderMe();
   $('#aside').innerHTML=statsHTML(false);
 }
 
@@ -542,7 +685,7 @@ function buildLesson(l){
   const w=l.words,g=l.g;
   const vg=shuffle(w.filter(x=>x.ex.includes(x.w)))[0];
   const q=[{t:'card',w:w[0]},{t:'card',w:w[1]},{t:'mc',w:w[0]},{t:'card',w:w[2]},{t:'listen',w:w[1]},{t:'card',w:w[3]},
-    {t:'reading',w:w[2]},{t:'card',w:w[4]},{t:'rmc',w:w[3]},{t:'listen',w:w[4]},{t:'match',ws:w},
+    {t:w[2].r===w[2].w||/^[ァ-ヶー]+$/.test(w[2].w)?'mc':'reading',w:w[2]},{t:'card',w:w[4]},{t:'rmc',w:w[3]},{t:'listen',w:w[4]},{t:'match',ws:w},
     {t:'tip',g},{t:'gap',g,e:g.ex[0]},{t:'gap',g,e:g.ex[1]},{t:'order',g}];
   if(vg)q.push({t:'vgap',w:vg});
   return q;
@@ -557,16 +700,24 @@ function prep(b){
   if(b.t==='rmc'){s.ans=b.w.w;s.opts=opts(s.ans,WORDS.map(x=>x.w))}
   if(b.t==='listen'){s.ans=b.w.w;s.opts=opts(s.ans,[...b.w.lesson.words,...WORDS].map(x=>x.w).slice(0,9).concat(shuffle(WORDS).slice(0,3).map(x=>x.w)))}
   if(b.t==='reading'){s.ans=b.w.r;s.opts=opts(s.ans,WORDS.map(x=>x.r))}
-  if(b.t==='gap'){s.ans=b.g.k;s.opts=opts(s.ans,GRAMS.map(x=>x.k))}
+  if(b.t==='gap'){s.ans=b.g.k;s.opts=opts(s.ans,ALLK)}
+  const x=b.x;
+  if(b.t==='xr'){s.ans=x.r;s.opts=shuffle([x.r,...readingTraps(x.w,x.r)])}
+  if(b.t==='xh'){s.ans=x.w;s.opts=shuffle([x.w,...x.hk])}
+  if(b.t==='xk'){s.ans=x.a;s.opts=shuffle([x.a,...x.d])}
+  if(b.t==='xc'){s.ans=x.w;s.opts=opts(x.w,POOL.C.filter(e=>posG(e.pos)===posG(x.pos)).map(e=>e.w))}
+  if(b.t==='xp'){s.ans=x.syn;s.opts=opts(x.syn,POOL.P.map(e=>e.syn))}
+  if(b.t==='xu'){s.ans=x.ex;s.opts=shuffle([x.ex,...shuffle(POOL.U.filter(e=>e!==x&&posG(e.pos)===posG(x.pos))).slice(0,3).map(e=>e.ex.replace(e.w,x.w))])}
   if(b.t==='vgap'){s.ans=b.w.w;s.opts=opts(s.ans,b.w.lesson.words.map(x=>x.w))}
   if(b.t==='order'){const n=b.g.order[1].length;let bank;do{bank=shuffle([...Array(n).keys()])}while(n>1&&bank.every((v,i)=>v===i));s.bank=bank;s.sel=[]}
   if(b.t==='match'){s.left=shuffle(b.ws);s.right=shuffle(b.ws.map(x=>x.m));s.ok=[];s.pl=null;s.pr=null;s.miss=0}
   return s;
 }
-function startSession(mode,lesson){
-  const q=mode==='lesson'?buildLesson(lesson):buildReview();
+function startSession(mode,lesson,exam){
+  const q=mode==='lesson'?buildLesson(lesson):mode==='exam'?exam.queue:buildReview();
   if(!q.length){toast('先完成一课再来复习');return}
-  L={mode,lesson,queue:q,idx:0,xp:0,right:0,graded:0,wrongOnce:new Set(),newWords:0};
+  L={mode,lesson,exam,queue:q,idx:0,xp:0,right:0,graded:0,wrongOnce:new Set(),
+    newWords:mode==='lesson'?lesson.words.filter(w=>S.words[w.w]==null).length:0};
   $('#lx').hidden=false;document.body.style.overflow='hidden';
   showEx();
 }
@@ -575,12 +726,20 @@ function progress(){
   const p=L.idx/L.queue.length;$('#lx-bar').style.width=(p*100)+'%';
   $('#lx-count').textContent=`${Math.min(L.idx+1,L.queue.length)}/${L.queue.length}`;
 }
-function optList(s,jp){return `<div class="opts">${s.opts.map((o,i)=>`<button class="opt ${jp?'jp':''}" data-opt="${i}"><span class="k num">${i+1}</span><span>${o}</span></button>`).join('')}</div>`}
+function optList(s,jp,fmt=o=>o,cls=''){return `<div class="opts">${s.opts.map((o,i)=>`<button class="opt ${jp?'jp':''} ${cls}" data-opt="${i}"><span class="k num">${i+1}</span><span>${fmt(o)}</span></button>`).join('')}</div>`}
+const xline=s=>`<div class="eyebrow">${TYPES[s.t==='gap'?'G':s.t[1].toUpperCase()][0]}${s.y?` · ${YF(s.y)}真题考点`:''}</div>`;
 function exHTML(s){
-  const w=s.w;
+  const w=s.w,x=s.x;
   switch(s.t){
+   case 'xr':return `<div class="ex">${xline(s)}<p class="q">「<span class="jp">${x.w}</span>」怎么读？</p>${optList(s,true)}</div>`;
+   case 'xh':return `<div class="ex">${xline(s)}<p class="q">「<span class="jp">${x.r}</span>」写成汉字是哪个？</p>${optList(s,true)}</div>`;
+   case 'xk':return `<div class="ex">${xline(s)}<p class="q">选择填入（　）的字</p><p class="sent big">${x.w.replace(x.a,'<span class="blank empty-b" id="blank">＿</span>')}</p>${optList(s,true)}</div>`;
+   case 'xc':{const [a,b]=x.ex.replace(x.w,'＿＿').split('＿＿');return `<div class="ex">${xline(s)}<p class="q">选择填入空格的词</p>
+       <p class="sent">${a}<span class="blank empty-b" id="blank">＿</span>${b}</p>${optList(s,true)}</div>`}
+   case 'xp':return `<div class="ex">${xline(s)}<p class="q">与「<span class="jp">${x.w}</span>」意思最接近的是？</p>${optList(s,true)}</div>`;
+   case 'xu':return `<div class="ex">${xline(s)}<p class="q">「<span class="jp">${x.w}</span>」用法正确的句子是？</p>${optList(s,true,o=>o.replace(x.w,`<u>${x.w}</u>`),'long')}</div>`;
    case 'card':return `<div class="ex"><div class="eyebrow">新单词</div><div class="wcard">
-     ${sayBtn(w.w)}<div class="word"><ruby>${w.w}<rt>${w.r}</rt></ruby></div><div class="mean">${w.m}</div>
+     ${sayBtn(w.w)}<div class="word"><ruby>${w.w}<rt>${w.r===w.w?'':w.r}</rt></ruby></div><div class="mean">${w.m}</div>${examChip(w.w)}
      <div class="exs">${sayBtn(w.ex,'say','播放例句')}<div><p class="jp">${hl(w.ex,w.w)}</p><p class="zh">${w.exz}</p></div></div></div></div>`;
    case 'mc':return `<div class="ex"><div class="eyebrow">选择意思</div><p class="q">「<span class="jp">${w.w}</span>」是什么意思？</p>${optList(s)}</div>`;
    case 'rmc':return `<div class="ex"><div class="eyebrow">选择单词</div><p class="q">哪个词表示「${w.m}」？</p>${optList(s,true)}</div>`;
@@ -592,7 +751,7 @@ function exHTML(s){
      ${g.ex.map(e=>`<div class="gex">${sayBtn(e[0].replace('＿＿',g.k))}<div><p class="jp">${fillG(e[0],g.k)}</p><p class="zh">${e[1]}</p></div></div>`).join('')}</div></div>`}
    case 'gap':case 'vgap':{
      const sent=s.t==='gap'?s.e[0]:w.ex.replace(w.w,'＿＿');const [a,b]=sent.split('＿＿');
-     return `<div class="ex"><div class="eyebrow">${s.t==='gap'?'语法填空':'单词填空'}</div><p class="q">选择合适的${s.t==='gap'?'语法':'单词'}填入空格</p>
+     return `<div class="ex">${s.y?xline(s):`<div class="eyebrow">${s.t==='gap'?'语法填空':'单词填空'}</div>`}<p class="q">选择合适的${s.t==='gap'?'语法':'单词'}填入空格</p>
        <p class="sent">${a}<span class="blank ${s.sel==null?'empty-b':''}" id="blank">${s.sel??'＿'}</span>${b}</p>${optList(s,true)}</div>`}
    case 'order':{const p=s.g.order[1];return `<div class="ex"><div class="eyebrow">组句</div><p class="q">把词块排成正确的句子</p><p style="color:var(--muted);font-weight:700">${s.g.order[0]}</p>
      <div class="zone" id="zone">${s.sel.map((i,k)=>`<button class="tile" data-un="${k}">${p[i]}</button>`).join('')}</div>
@@ -623,8 +782,12 @@ function foot(state,detail){
   if(s.t==='match'){f.innerHTML=`<div class="foot-in"><span style="color:var(--muted);font-weight:800" class="num">已配对 ${s.ok.length}/${s.left.length}</span><span></span></div>`;return}
   f.innerHTML=`<div class="foot-in"><button class="btn btn-ghost" data-act="skip">跳过</button><button class="btn btn-primary" data-act="check" ${canCheck(s)?'':'disabled'}>检查</button></div>`;
 }
+const zhLine=t=>`<br><span style="font-family:var(--f-ui);color:var(--muted)">${t}</span>`;
 function detailFor(s){
-  const w=s.w;
+  const w=s.w,x=s.x;
+  if(s.t==='xc'||s.t==='xu')return `${x.ex}${zhLine(`${x.w}（${x.r}）${x.m} · ${x.exz}`)}`;
+  if(s.t==='xp')return `${x.w} ≈ ${x.syn}${zhLine(`${x.r} · ${x.m}`)}`;
+  if(s.t==='xr'||s.t==='xh'||s.t==='xk')return `${x.w}（${x.r}）${zhLine(x.m)}`;
   if(s.t==='gap')return `${s.e[0].replace('＿＿',s.ans)}<br><span style="font-family:var(--f-ui);color:var(--muted)">${s.e[1]}</span>`;
   if(s.t==='vgap')return `${w.ex}<br><span style="font-family:var(--f-ui);color:var(--muted)">${w.exz}</span>`;
   if(s.t==='order')return `${s.g.order[1].join('')}`;
@@ -638,8 +801,11 @@ function grade(ok){
   else{L.queue.push(L.queue[L.idx]);if(s.w&&S.words[s.w.w]!=null)S.words[s.w.w]=Math.max(0,S.words[s.w.w]-1)}
   document.querySelectorAll('#lx-body button').forEach(b=>{if(!b.dataset.say)b.disabled=true});
   if(s.opts){document.querySelectorAll('#lx-body .opt').forEach(b=>{const v=s.opts[+b.dataset.opt];if(v===s.ans)b.classList.add('right');else if(v===s.sel)b.classList.add('wrong')})}
-  if(s.t==='gap'||s.t==='vgap'){const bl=$('#blank');bl.textContent=s.ans;bl.classList.remove('empty-b');bl.style.color=ok?'var(--good)':'var(--bad)';say((s.t==='gap'?s.e[0]:s.w.ex).replace('＿＿',s.ans))}
+  if(s.t==='gap'||s.t==='vgap'||s.t==='xc'||s.t==='xk'){const bl=$('#blank');bl.textContent=s.ans;bl.classList.remove('empty-b');bl.style.color=ok?'var(--good)':'var(--bad)';
+    say(s.t==='xc'?s.x.ex:s.t==='xk'?s.x.w:(s.t==='gap'?s.e[0]:s.w.ex).replace('＿＿',s.ans))}
   else if(s.t==='order')say(s.g.order[1].join(''));
+  else if(s.t==='xu')say(s.x.ex);
+  else if(s.x)say(s.x.w);
   else if(s.w&&ok)say(s.w.w);
   foot(ok?'ok':'no',ok&&s.t!=='gap'&&s.t!=='vgap'?detailFor(s):detailFor(s));
   progress();
@@ -649,22 +815,23 @@ function check(){const s=L.cur;if(s.done||!canCheck(s))return;
 function next(){L.idx++;showEx()}
 function finish(){
   const acc=L.graded?Math.round(L.right/L.graded*100):100;
-  let bonus=0,newW=0;
+  let bonus=0;const newW=L.newWords;
   if(L.mode==='lesson'){
     bonus=20;const prev=S.lessons[L.lesson.id];
     S.lessons[L.lesson.id]={done:true,best:Math.max(prev?.best||0,acc)};
-    L.lesson.words.forEach(w=>{if(S.words[w.w]==null){S.words[w.w]=1;newW++}else if(S.words[w.w]<1)S.words[w.w]=1});
+    L.lesson.words.forEach(w=>{if(!(S.words[w.w]>=1))S.words[w.w]=1});
   }
+  if(L.mode==='exam'){const r=S.exam[L.exam.key];S.exam[L.exam.key]={best:Math.max(r?.best||0,acc),n:(r?.n||0)+1}}
   const gained=L.xp+bonus;S.xp+=gained;const k=dk(new Date());S.days[k]=(S.days[k]||0)+gained;save();
   $('#lx-bar').style.width='100%';$('#lx-count').textContent='';
   $('#lx-body').innerHTML=`<div class="ex done-screen"><div class="badge">${I.check}</div>
-    <h2>${L.mode==='lesson'?'第 '+L.lesson.n+' 课完成！':'复习完成！'}</h2>
-    <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.g.p}`:'记忆强度已更新'}</p>
-    <div class="tiles"><div><b class="num" style="color:var(--sun)">+${gained}</b><span>XP</span></div><div><b class="num" style="color:var(--good)">${acc}%</b><span>正确率</span></div><div><b class="num" style="color:var(--brand)">${L.mode==='lesson'?newW:L.graded}</b><span>${L.mode==='lesson'?'新单词':'复习单词'}</span></div></div>
+    <h2>${L.mode==='lesson'?'第 '+L.lesson.n+' 课完成！':L.mode==='exam'?'练习完成！':'复习完成！'}</h2>
+    <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.g.p}`:L.mode==='exam'?L.exam.title:'记忆强度已更新'}</p>
+    <div class="tiles"><div><b class="num" style="color:var(--sun)">+${gained}</b><span>XP</span></div><div><b class="num" style="color:var(--good)">${acc}%</b><span>正确率</span></div><div><b class="num" style="color:var(--brand)">${L.mode==='lesson'?newW:L.graded}</b><span>${L.mode==='lesson'?'新单词':'作答次数'}</span></div></div>
     <p style="color:var(--muted);font-size:13px" class="num">连续学习 ${streak()} 天 · 今日 ${todayXP()}/${S.goal} XP</p></div>`;
   const nx=nextLesson();
   $('#lx-foot').className='lx-foot';
-  $('#lx-foot').innerHTML=`<div class="foot-in"><button class="btn btn-ghost" data-act="close">返回课程</button>${L.mode==='lesson'&&nx?`<button class="btn btn-primary" data-start="${nx.id}">下一课</button>`:''}</div>`;
+  $('#lx-foot').innerHTML=`<div class="foot-in"><button class="btn btn-ghost" data-act="close">${L.mode==='exam'?'返回真题':'返回课程'}</button>${L.mode==='lesson'&&nx?`<button class="btn btn-primary" data-start="${nx.id}">下一课</button>`:L.mode==='exam'&&L.exam.key.length===1?`<button class="btn btn-primary" data-exam="${L.exam.key}">再练 10 题</button>`:''}</div>`;
   L.finished=true;
 }
 
@@ -675,6 +842,9 @@ document.addEventListener('click',e=>{
   if(t.dataset.tab){tab=t.dataset.tab;try{history.replaceState(null,'','#'+tab)}catch(err){}render();window.scrollTo(0,0);return}
   if(t.dataset.goal){S.goal=+t.dataset.goal;save();render();return}
   if(t.dataset.start){const l=LESSONS.find(x=>x.id===t.dataset.start);if(L)L=null;startSession('lesson',l);return}
+  if(t.dataset.exam){const key=t.dataset.exam;if(L)L=null;
+    const exam=key[0]==='y'?{key,title:`${YF(key.slice(1))} 真题考点`,queue:yearItems(key.slice(1))}:{key,title:`${TYPES[key][0]} · ${TYPES[key][1]}`,queue:typeItems(key)};
+    startSession('exam',null,exam);return}
   const act=t.dataset.act;
   if(act==='startReview'){startSession('review');return}
   if(act==='reset'){$('#reset-box').innerHTML=`<p style="font-weight:800;margin-bottom:10px">确定要清空所有进度吗？此操作无法撤销。</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-bad" data-act="resetYes">清空进度</button><button class="btn btn-ghost" data-act="resetNo">取消</button></div>`;return}
