@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ことば道 N2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#2e6bf6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1420" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ことば道">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<style>
+/* Layout: Busuu-like learning app — left nav, course path in the middle, stats rail on the right; lesson player is a full-screen sheet with a check bar. */
+:root{
+  --bg:#f3f6fb; --surface:#ffffff; --sunk:#eef2f8; --ink:#17212f; --muted:#5f6c82; --line:#dfe5ef;
+  --brand:#2e6bf6; --brand-ink:#ffffff; --brand-soft:#e4ecff; --brand-deep:#1f4fc4;
+  --good:#16a874; --good-soft:#ddf5ea; --bad:#e5475a; --bad-soft:#fde6e9; --sun:#ff9f1a;
+  --u1:#2e6bf6; --u2:#0e9c9c; --u3:#e2557a; --u4:#3a9d3a; --u5:#d98a06;
+  --shadow:0 1px 2px rgba(23,33,47,.06),0 4px 14px rgba(23,33,47,.06);
+  --f-ui:"Nunito","PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  --f-jp:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1420; --surface:#171f2e; --sunk:#111926; --ink:#e7edf7; --muted:#97a3b9; --line:#263248;
+  --brand:#5b8dff; --brand-ink:#0b1430; --brand-soft:#1c2a4b; --brand-deep:#8eb0ff;
+  --good:#3ccf97; --good-soft:#12352a; --bad:#ff6f80; --bad-soft:#3b1b22; --sun:#ffb347;
+  --u1:#6b97ff; --u2:#2cc4c4; --u3:#ff7c9c; --u4:#64c564; --u5:#f0aa33;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1420; --surface:#171f2e; --sunk:#111926; --ink:#e7edf7; --muted:#97a3b9; --line:#263248;
+  --brand:#5b8dff; --brand-ink:#0b1430; --brand-soft:#1c2a4b; --brand-deep:#8eb0ff;
+  --good:#3ccf97; --good-soft:#12352a; --bad:#ff6f80; --bad-soft:#3b1b22; --sun:#ffb347;
+  --u1:#6b97ff; --u2:#2cc4c4; --u3:#ff7c9c; --u4:#64c564; --u5:#f0aa33;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,a:focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:10px}
+.jp{font-family:var(--f-jp)}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.25}
+p{margin:0}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+
+/* shell */
+.shell{display:grid;grid-template-columns:210px minmax(0,1fr) 290px;gap:32px;max-width:1220px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.side{position:sticky;top:calc(24px + env(safe-area-inset-top,0px));align-self:start;display:flex;flex-direction:column;gap:6px}
+.logo{display:flex;align-items:center;gap:10px;padding:4px 10px 18px}
+.logo-mark{width:38px;height:38px;border-radius:12px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-family:var(--f-jp);font-weight:700;font-size:20px}
+.logo b{font-family:var(--f-jp);font-size:19px;display:block;line-height:1.1}
+.logo small{font-size:11px;font-weight:800;color:var(--brand);letter-spacing:.1em}
+.nav-btn{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;font-weight:800;color:var(--muted);text-align:left}
+.nav-btn svg{width:22px;height:22px;flex:none}
+.nav-btn:hover{background:var(--sunk);color:var(--ink)}
+.nav-btn[aria-current="page"]{background:var(--brand-soft);color:var(--brand)}
+main{min-width:0;display:flex;flex-direction:column;gap:22px}
+aside{display:flex;flex-direction:column;gap:16px;position:sticky;top:calc(24px + env(safe-area-inset-top,0px));align-self:start}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.page-h{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.page-h h1{font-size:26px;font-weight:900}
+.page-h p{color:var(--muted)}
+
+/* stats */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:22px;font-weight:900}
+.stat span{font-size:12px;color:var(--muted);font-weight:700}
+.streak{display:flex;align-items:center;gap:14px}
+.flame{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb,var(--sun) 18%,var(--surface));color:var(--sun)}
+.flame svg{width:26px;height:26px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+.day{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted);font-weight:700}
+.day i{width:24px;height:24px;border-radius:50%;background:var(--sunk);border:2px solid var(--line);display:grid;place-items:center}
+.day.on i{background:var(--sun);border-color:var(--sun);color:#fff}
+.day.today span{color:var(--ink)}
+.goal{display:flex;align-items:center;gap:16px}
+.ring{flex:none}
+.ring circle{fill:none}
+.ring .bgc{stroke:var(--sunk)}
+.goal-txt b{font-size:20px;font-weight:900}
+.goal-txt span{display:block;color:var(--muted);font-size:13px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.chip{padding:5px 12px;border-radius:999px;border:1.5px solid var(--line);font-weight:800;font-size:13px;color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+.strip{display:none}
+
+/* continue card */
+.hero{background:var(--brand);color:#fff;border-radius:20px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;position:relative;overflow:hidden}
+.hero::after{content:attr(data-glyph);position:absolute;right:-10px;bottom:-46px;font-family:var(--f-jp);font-size:170px;font-weight:700;line-height:1;opacity:.13;pointer-events:none}
+.hero .eyebrow{color:rgba(255,255,255,.8)}
+.hero h2{font-family:var(--f-jp);font-size:26px;margin-top:4px}
+.hero p{opacity:.88;margin-top:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:14px;font-weight:900;font-size:15px;white-space:nowrap}
+.btn-white{background:#fff;color:#1f4fc4;box-shadow:0 3px 0 rgba(0,0,0,.15);position:relative;z-index:1}
+.btn-primary{background:var(--brand);color:var(--brand-ink);box-shadow:0 3px 0 var(--brand-deep)}
+.btn-primary:disabled{background:var(--sunk);color:var(--muted);box-shadow:none;cursor:not-allowed}
+.btn-ghost{border:2px solid var(--line);color:var(--ink)}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:none}
+
+/* units */
+.unit{display:flex;flex-direction:column;gap:10px}
+.unit-h{display:flex;align-items:center;gap:14px}
+.glyph{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-family:var(--f-jp);font-weight:700;font-size:28px;flex:none;
+  background:color-mix(in srgb,var(--uc) 15%,var(--surface));color:var(--uc)}
+.unit-h h3{font-family:var(--f-jp);font-size:20px}
+.unit-h p{color:var(--muted);font-size:13px;font-weight:700}
+.unit-h .uprog{margin-left:auto;font-size:13px;font-weight:800;color:var(--muted)}
+.lessons{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.lrow{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;text-align:left;border-top:1px solid var(--line)}
+.lrow:first-child{border-top:0}
+.lrow:hover{background:var(--sunk)}
+.lrow .ri{position:relative;width:46px;height:46px;flex:none;display:grid;place-items:center}
+.lrow .ri svg.ring{position:absolute;inset:0}
+.lrow .ri .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--sunk);color:var(--muted);font-weight:900;font-size:14px}
+.lrow.done .ri .ic{background:var(--uc);color:#fff}
+.lrow.next .ri .ic{background:color-mix(in srgb,var(--uc) 18%,var(--surface));color:var(--uc)}
+.lrow .lt{min-width:0;flex:1}
+.lrow .lt b{font-family:var(--f-jp);font-size:16px;display:block}
+.lrow .lt span{color:var(--muted);font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:12px;font-weight:900;padding:5px 11px;border-radius:999px;flex:none}
+.tag-next{background:var(--brand);color:var(--brand-ink)}
+.tag-done{background:var(--good-soft);color:var(--good)}
+.tag-new{background:var(--sunk);color:var(--muted)}
+
+/* review & grammar lists */
+.wlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.witem{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.witem .wt{flex:1;min-width:0}
+.witem .wt b{font-family:var(--f-jp);font-size:17px}
+.witem .wt small{font-family:var(--f-jp);color:var(--muted);margin-left:6px}
+.witem .wt span{display:block;color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.str{display:flex;gap:3px}
+.str i{width:6px;height:16px;border-radius:3px;background:var(--line)}
+.str i.on{background:var(--good)}
+.str.weak i.on{background:var(--sun)}
+.say{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--brand);background:var(--brand-soft);flex:none}
+.say svg{width:18px;height:18px}
+.say:hover{filter:brightness(.96)}
+.empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px}
+.gcard-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gcard-h h3{font-family:var(--f-jp);font-size:22px}
+.gcard .m{font-weight:800}
+.form{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:14px;background:var(--sunk);border-radius:10px;padding:8px 12px}
+.form span:first-child{font-size:11px;font-weight:900;letter-spacing:.08em;color:var(--muted)}
+.gex{display:flex;gap:10px;align-items:flex-start}
+.gex div{min-width:0}
+.gex p.jp{font-size:16px}
+.gex p.zh{font-size:13px;color:var(--muted)}
+mark{background:color-mix(in srgb,var(--brand) 18%,transparent);color:inherit;border-radius:4px;padding:0 3px}
+.danger{color:var(--bad);font-weight:800;font-size:13px}
+
+/* lesson player */
+.lx{position:fixed;inset:0;z-index:50;background:var(--surface);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.lx-top{display:flex;align-items:center;gap:14px;padding:14px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px));max-width:760px;width:100%;margin:0 auto}
+.icon-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:hover{background:var(--sunk)}
+.icon-btn svg{width:22px;height:22px}
+.bar{flex:1;height:12px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--good);border-radius:99px;transition:width .35s ease}
+.lx-count{font-weight:900;color:var(--muted);font-size:13px;min-width:44px;text-align:right}
+.lx-body{flex:1;overflow-y:auto;padding-block:12px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ex{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:20px;animation:rise .28s ease}
+@keyframes rise{from{transform:translateY(8px);opacity:.4}to{transform:none;opacity:1}}
+.q{font-size:21px;font-weight:900}
+.q .jp{font-weight:700}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;border-radius:14px;border:2px solid var(--line);box-shadow:0 2px 0 var(--line);font-weight:800;font-size:16px;background:var(--surface)}
+.opt:hover:not(:disabled){background:var(--sunk)}
+.opt .k{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;color:var(--muted);flex:none}
+.opt.jp{font-size:19px;font-weight:700}
+.opt.sel{border-color:var(--brand);background:var(--brand-soft);box-shadow:0 2px 0 var(--brand)}
+.opt.sel .k{border-color:var(--brand);color:var(--brand)}
+.opt.right{border-color:var(--good);background:var(--good-soft);box-shadow:0 2px 0 var(--good)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);box-shadow:0 2px 0 var(--bad)}
+.opt:disabled{cursor:default}
+.wcard{border:2px solid var(--line);border-radius:20px;padding:26px 22px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.wcard .word{font-family:var(--f-jp);font-size:46px;font-weight:700;line-height:1.2}
+.wcard rt{font-size:15px;color:var(--muted);font-weight:500}
+.wcard .mean{font-size:20px;font-weight:900;color:var(--brand)}
+.wcard .exs{width:100%;text-align:left;background:var(--sunk);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start}
+.wcard .exs div{min-width:0}
+.wcard .exs p.jp{font-size:16px}
+.wcard .exs p.zh{font-size:13px;color:var(--muted);margin-top:2px}
+.wcard .exs b{color:var(--brand)}
+.say-xl{width:96px;height:96px;border-radius:28px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;box-shadow:0 4px 0 var(--brand-deep);margin:0 auto}
+.say-xl svg{width:44px;height:44px}
+.say-row{display:flex;gap:14px;justify-content:center;align-items:center}
+.say-slow{width:56px;height:56px;border-radius:18px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:900;font-size:12px}
+.sent{font-family:var(--f-jp);font-size:21px;line-height:2.1;padding:18px;border-radius:16px;background:var(--sunk)}
+.blank{display:inline-block;min-width:110px;border-bottom:3px solid var(--brand);text-align:center;color:var(--brand);font-weight:700;padding:0 6px;line-height:1.5}
+.blank.empty-b{color:transparent}
+.zone{min-height:64px;border-bottom:2px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;padding-bottom:10px;align-content:flex-start}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{font-family:var(--f-jp);font-size:17px;font-weight:700;padding:9px 14px;border-radius:12px;border:2px solid var(--line);box-shadow:0 2px 0 var(--line);background:var(--surface)}
+.tile.used{visibility:hidden}
+.tile:disabled{cursor:default}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.mt{padding:14px 10px;border-radius:14px;border:2px solid var(--line);box-shadow:0 2px 0 var(--line);font-weight:800;background:var(--surface);min-height:56px}
+.mt.jp{font-size:19px;font-weight:700}
+.mt.sel{border-color:var(--brand);background:var(--brand-soft)}
+.mt.ok{border-color:var(--good);background:var(--good-soft);color:var(--good);opacity:.65;cursor:default}
+.mt.no{border-color:var(--bad);background:var(--bad-soft);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.tip{border-radius:20px;background:var(--brand-soft);padding:22px;display:flex;flex-direction:column;gap:14px}
+.tip h2{font-family:var(--f-jp);font-size:32px;color:var(--brand)}
+.tip .m{font-size:18px;font-weight:900}
+.tip .form{background:var(--surface)}
+.tip .gex{background:var(--surface);border-radius:12px;padding:12px}
+
+.lx-foot{border-top:2px solid var(--line);padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:var(--surface)}
+.lx-foot.ok{background:var(--good-soft);border-color:transparent}
+.lx-foot.no{background:var(--bad-soft);border-color:transparent}
+.foot-in{max-width:600px;margin:0 auto;display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap}
+.fb{display:flex;gap:12px;align-items:center;min-width:0;flex:1}
+.fb .bad-ic,.fb .ok-ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff}
+.fb .ok-ic{background:var(--good)} .fb .bad-ic{background:var(--bad)}
+.fb .ok-ic svg,.fb .bad-ic svg{width:24px;height:24px}
+.fb b{font-size:18px;font-weight:900;display:block}
+.ok .fb b{color:var(--good)} .no .fb b{color:var(--bad)}
+.fb p{font-size:14px;min-width:0}
+.btn-good{background:var(--good);color:#fff;box-shadow:0 3px 0 color-mix(in srgb,var(--good) 70%,#000)}
+.btn-bad{background:var(--bad);color:#fff;box-shadow:0 3px 0 color-mix(in srgb,var(--bad) 70%,#000)}
+.foot-in .btn{min-width:150px}
+
+.done-screen{text-align:center;align-items:center}
+.badge{width:110px;height:110px;border-radius:32px;background:var(--good);color:#fff;display:grid;place-items:center;margin:20px auto 0;box-shadow:0 6px 0 color-mix(in srgb,var(--good) 70%,#000)}
+.badge svg{width:56px;height:56px}
+.done-screen h2{font-size:28px;font-weight:900}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.tiles div{border:2px solid var(--line);border-radius:16px;padding:14px 8px}
+.tiles b{display:block;font-size:24px;font-weight:900}
+.tiles span{font-size:12px;color:var(--muted);font-weight:800}
+.sheet{position:absolute;inset:0;background:rgba(10,16,28,.45);display:grid;place-items:end center;z-index:5;padding:16px}
+.sheet-card{background:var(--surface);border-radius:20px;padding:22px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center;margin-bottom:env(safe-area-inset-bottom,0px)}
+.sheet-card h3{font-size:19px;font-weight:900}
+.sheet-card p{color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;font-weight:800;z-index:80;max-width:calc(100% - 32px)}
+
+@media (max-width:1100px){
+  .shell{grid-template-columns:200px minmax(0,1fr)}
+  aside{display:none}
+  .strip{display:grid}
+}
+@media (max-width:760px){
+  .shell{grid-template-columns:minmax(0,1fr);padding-block:16px 100px}
+  .side{position:fixed;top:auto;left:0;right:0;bottom:0;z-index:20;flex-direction:row;justify-content:space-around;gap:0;background:var(--surface);border-top:1px solid var(--line);
+    padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  .logo{display:none}
+  .nav-btn{flex-direction:column;gap:2px;font-size:11px;padding:6px 10px;flex:1;align-items:center}
+  .hero{grid-template-columns:1fr}
+  .hero h2{font-size:22px}
+  .wlist{grid-template-columns:minmax(0,1fr)}
+  .wcard .word{font-size:38px}
+  .q{font-size:19px}
+  .foot-in .btn{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="side" id="nav" aria-label="主导航"></nav>
+  <main id="main"></main>
+  <aside id="aside" aria-label="学习统计"></aside>
+</div>
+
+<div class="lx" id="lx" hidden role="dialog" aria-modal="true" aria-label="课程">
+  <div class="lx-top">
+    <button class="icon-btn" id="lx-close" aria-label="退出课程"></button>
+    <div class="bar" role="progressbar" aria-label="课程进度"><i id="lx-bar"></i></div>
+    <span class="lx-count num" id="lx-count"></span>
+  </div>
+  <div class="lx-body" id="lx-body"></div>
+  <footer class="lx-foot" id="lx-foot"></footer>
+  <div class="sheet" id="lx-sheet" hidden>
+    <div class="sheet-card">
+      <h3>现在退出吗？</h3>
+      <p>本课进度不会保存，下次需要从头开始。</p>
+      <button class="btn btn-primary" id="sheet-stay">继续学习</button>
+      <button class="btn btn-ghost" id="sheet-quit">退出课程</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- content: JLPT N2 ---------- */
+const UNITS=[
+ {glyph:'職',title:'職場とビジネス',zh:'职场与商务',c:'--u1',lessons:[
+  {title:'締め切りを守る',zh:'按时交付',words:[
+   ['提出','ていしゅつ','提交','報告書を金曜日までに提出してください。','请在周五之前提交报告。'],
+   ['締め切り','しめきり','截止日期','締め切りに間に合うように、今夜は残って作業します。','为了赶上截止日期，今晚留下来加班。'],
+   ['担当','たんとう','负责；担任','この企画の担当は田中さんです。','这个企划由田中负责。'],
+   ['打ち合わせ','うちあわせ','碰头会；事先商量','午後から取引先と打ち合わせがあります。','下午和客户有个碰头会。'],
+   ['引き受ける','ひきうける','承接；接受（工作）','難しい仕事だったが、引き受けることにした。','虽然工作很难，还是决定接下来。']],
+   g:{p:'〜わけにはいかない',k:'わけにはいかない',m:'不能…（出于责任、道理或情理）',f:'動詞辞書形／ない形 ＋ わけにはいかない',
+    ex:[['明日は大事な会議があるので、休む＿＿。','明天有重要的会议，不能请假。'],['先輩に頼まれた仕事だから、断る＿＿。','是前辈托付的工作，不能拒绝。']],
+    order:['约好了的事，不能半途而废。',['約束した','以上、','途中で','やめる','わけにはいかない。']]}},
+  {title:'給料と昇進',zh:'薪水与晋升',words:[
+   ['昇進','しょうしん','晋升','彼女は入社五年目で課長に昇進した。','她入职第五年升为科长。'],
+   ['残業','ざんぎょう','加班','今月は残業が多くて、ほとんど休めなかった。','这个月加班多，几乎没休息。'],
+   ['給与','きゅうよ','工资；薪金','給与は毎月二十五日に振り込まれます。','工资每月25日汇入账户。'],
+   ['取引先','とりひきさき','客户；交易方','取引先との信頼関係を大切にしている。','重视与客户之间的信赖关系。'],
+   ['見積もり','みつもり','报价；估算','工事の見積もりを三社に頼んだ。','向三家公司索要了工程报价。']],
+   g:{p:'〜に応じて',k:'に応じて',m:'根据…；按照…',f:'名詞 ＋ に応じて',
+    ex:[['成績＿＿、給与が決まります。','工资根据业绩决定。'],['お客様の予算＿＿、プランを選べます。','可以根据客人的预算选择方案。']],
+    order:['根据经验支付工资。',['経験に','応じて','給与を','支払います。']]}}]},
+ {glyph:'社',title:'社会とニュース',zh:'社会与新闻',c:'--u2',lessons:[
+  {title:'景気の動き',zh:'经济动向',words:[
+   ['景気','けいき','景气；经济状况','景気が回復して、求人が増えてきた。','经济复苏，招聘多了起来。'],
+   ['増加','ぞうか','增加','外国人観光客の数が年々増加している。','外国游客人数逐年增加。'],
+   ['減少','げんしょう','减少','農村の人口は減少し続けている。','农村人口持续减少。'],
+   ['影響','えいきょう','影响','円安の影響で、輸入品の値段が上がった。','受日元贬值影响，进口商品涨价了。'],
+   ['対策','たいさく','对策','政府は物価高の対策を発表した。','政府公布了应对物价上涨的对策。']],
+   g:{p:'〜につれて',k:'につれて',m:'随着…（变化）',f:'動詞辞書形／名詞 ＋ につれて',
+    ex:[['年をとる＿＿、体力が落ちてきた。','随着年龄增长，体力下降了。'],['町が発展する＿＿、交通も便利になった。','随着城市发展，交通也变方便了。']],
+    order:['随着时间流逝，悲伤渐渐淡了。',['時間が','たつに','つれて','悲しみが','薄れていった。']]}},
+  {title:'社会問題',zh:'社会问题',words:[
+   ['少子化','しょうしか','少子化；出生率下降','少子化で、小学校の数が減っている。','由于少子化，小学数量在减少。'],
+   ['高齢化','こうれいか','老龄化','高齢化が進み、介護の需要が高まっている。','老龄化加剧，护理需求增加。'],
+   ['格差','かくさ','差距；差别','都市と地方の所得格差が広がっている。','城乡收入差距在扩大。'],
+   ['世論','よろん','舆论','世論調査によると、多くの人が増税に反対している。','据舆论调查，很多人反对增税。'],
+   ['改善','かいぜん','改善','労働環境の改善を求める声が上がっている。','要求改善劳动环境的呼声高涨。']],
+   g:{p:'〜をめぐって',k:'をめぐって',m:'围绕…（争论、对立）',f:'名詞 ＋ をめぐって',
+    ex:[['新しい空港の建設＿＿、住民の意見が分かれている。','围绕新机场的建设，居民意见分歧。'],['遺産＿＿、兄弟が争っている。','兄弟们围绕遗产起了争执。']],
+    order:['围绕这个问题进行了激烈的讨论。',['この問題を','めぐって','激しい','議論が','行われた。']]}}]},
+ {glyph:'心',title:'気持ちと人間関係',zh:'情感与人际',c:'--u3',lessons:[
+  {title:'心の動き',zh:'内心起伏',words:[
+   ['落ち込む','おちこむ','消沉；沮丧','試験に落ちて、しばらく落ち込んでいた。','考试落榜，消沉了一阵子。'],
+   ['悔しい','くやしい','懊悔；不甘心','一点差で負けて、本当に悔しい。','一分之差输了，真不甘心。'],
+   ['遠慮','えんりょ','客气；顾虑','遠慮しないで、たくさん食べてください。','别客气，多吃点。'],
+   ['素直','すなお','坦率；听话','素直に謝れば、きっと許してもらえるよ。','坦率道歉的话，一定会被原谅的。'],
+   ['甘える','あまえる','撒娇；依赖','親に甘えてばかりいないで、自分でやりなさい。','别总依赖父母，自己去做。']],
+   g:{p:'〜ずにはいられない',k:'ずにはいられない',m:'不禁…；忍不住…',f:'動詞ない形（〜ない）＋ ずにはいられない（する→せずには）',
+    ex:[['あの映画のラストシーンは、泣か＿＿。','那部电影的结尾，让人忍不住落泪。'],['彼の冗談を聞くと、笑わ＿＿。','听了他的笑话，忍不住笑出来。']],
+    order:['看到那条新闻，不由得感到愤怒。',['そのニュースを','見て、','怒りを','感じ','ずにはいられなかった。']]}},
+  {title:'仲直り',zh:'和好',words:[
+   ['誤解','ごかい','误会','言い方が悪くて、友達に誤解されてしまった。','说法不好，被朋友误会了。'],
+   ['仲直り','なかなおり','和好','けんかした弟と、やっと仲直りできた。','终于和吵架的弟弟和好了。'],
+   ['思いやり','おもいやり','体贴；同情心','彼女は思いやりのある人だ。','她是个体贴的人。'],
+   ['頼もしい','たのもしい','可靠的；靠得住','新しいリーダーはとても頼もしい。','新领导非常可靠。'],
+   ['気が済む','きがすむ','心满意足；甘心','気が済むまで話を聞いてあげよう。','陪你聊到你满意为止。']],
+   g:{p:'〜ものの',k:'ものの',m:'虽然…但是…（结果与预期不符）',f:'動詞・形容詞普通形 ＋ ものの',
+    ex:[['謝ろうと思った＿＿、なかなか言い出せない。','虽然想道歉，却怎么也说不出口。'],['免許は取った＿＿、まだ一度も運転していない。','驾照是拿了，可一次也没开过车。']],
+    order:['虽然和好了，心里还有些疙瘩。',['仲直りした','ものの、','まだ','少し','わだかまりがある。']]}}]},
+ {glyph:'暮',title:'暮らしと健康',zh:'生活与健康',c:'--u4',lessons:[
+  {title:'体を大切に',zh:'爱护身体',words:[
+   ['睡眠','すいみん','睡眠','十分な睡眠をとることが健康の基本だ。','充足的睡眠是健康之本。'],
+   ['栄養','えいよう','营养','栄養のバランスを考えて食事を作る。','考虑营养均衡来做饭。'],
+   ['症状','しょうじょう','症状','熱やせきなどの症状があれば、病院に行ってください。','如有发烧、咳嗽等症状，请去医院。'],
+   ['予防','よぼう','预防','手洗いはかぜの予防に効果がある。','洗手对预防感冒有效。'],
+   ['回復','かいふく','恢复；康复','手術の後、順調に回復している。','手术后恢复得很顺利。']],
+   g:{p:'〜おそれがある',k:'おそれがある',m:'有…的危险；恐怕会…（用于不好的事）',f:'動詞辞書形／名詞の ＋ おそれがある',
+    ex:[['このままでは、病気が悪化する＿＿。','这样下去，病情恐怕会恶化。'],['今夜から明日にかけて、大雨の＿＿。','今晚到明天恐有大雨。']],
+    order:['睡眠不足可能会影响健康。',['睡眠不足は','健康に','影響を','与える','おそれがある。']]}},
+  {title:'家事の工夫',zh:'家务小窍门',words:[
+   ['家事','かじ','家务','夫婦で家事を分担している。','夫妻分担家务。'],
+   ['節約','せつやく','节约','電気代を節約するために、エアコンの温度を上げた。','为了节省电费，调高了空调温度。'],
+   ['片付ける','かたづける','收拾；整理','出かける前に部屋を片付けなさい。','出门前把房间收拾好。'],
+   ['散らかる','ちらかる','凌乱；散乱','子どもの部屋はいつもおもちゃが散らかっている。','孩子的房间总是到处散着玩具。'],
+   ['手間','てま','工夫；劳力','手間がかかる料理だが、とてもおいしい。','虽然是费工夫的菜，但非常好吃。']],
+   g:{p:'〜たびに',k:'たびに',m:'每当…；每次…',f:'動詞辞書形／名詞の ＋ たびに',
+    ex:[['この写真を見る＿＿、故郷を思い出す。','每次看到这张照片，都会想起故乡。'],['出張の＿＿、お土産を買ってくる。','每次出差都会买特产回来。']],
+    order:['每次去那家店，都忍不住买面包。',['あの店に','行く','たびに','パンを','買ってしまう。']]}}]},
+ {glyph:'災',title:'環境と災害',zh:'环境与灾害',c:'--u5',lessons:[
+  {title:'地球を守る',zh:'守护地球',words:[
+   ['汚染','おせん','污染','工場の排水による川の汚染が問題になった。','工厂排水造成的河流污染成了问题。'],
+   ['資源','しげん','资源','限りある資源を大切に使おう。','珍惜使用有限的资源吧。'],
+   ['温暖化','おんだんか','（全球）变暖','温暖化の影響で、夏がますます暑くなった。','受全球变暖影响，夏天越来越热。'],
+   ['保護','ほご','保护','この地域では野生動物の保護に力を入れている。','该地区致力于保护野生动物。'],
+   ['再利用','さいりよう','再利用','ペットボトルは再利用できる。','塑料瓶可以再利用。']],
+   g:{p:'〜に限らず',k:'に限らず',m:'不仅限于…；不只是…',f:'名詞 ＋ に限らず',
+    ex:[['この店は若者＿＿、お年寄りにも人気がある。','这家店不仅受年轻人欢迎，老人也喜欢。'],['環境問題は日本＿＿、世界全体の課題だ。','环境问题不只是日本的，也是全世界的课题。']],
+    order:['这本书不只是孩子，大人读也很有意思。',['この本は','子どもに','限らず','大人が読んでも','面白い。']]}},
+  {title:'災害に備える',zh:'防灾准备',words:[
+   ['災害','さいがい','灾害','日本は自然災害が多い国だ。','日本是自然灾害多发的国家。'],
+   ['避難','ひなん','避难','津波警報が出たら、すぐに高い所へ避難してください。','发布海啸警报后，请立刻到高处避难。'],
+   ['被害','ひがい','受害；损失','台風で農作物に大きな被害が出た。','台风给农作物造成了很大损失。'],
+   ['備える','そなえる','防备；准备','地震に備えて、水と食料を用意しておく。','为防备地震，事先准备好水和食物。'],
+   ['復旧','ふっきゅう','恢复（原状）；修复','停電は三時間後に復旧した。','停电三小时后恢复了。']],
+   g:{p:'〜からには',k:'からには',m:'既然…就…',f:'動詞普通形 ＋ からには',
+    ex:[['引き受けた＿＿、最後まで責任を持ってやります。','既然接下了，就负责到底。'],['日本に住む＿＿、地震への備えは欠かせない。','既然住在日本，防震准备就必不可少。']],
+    order:['既然决定参赛，就想拿冠军。',['出場する','からには','優勝を','目指したい。']]}}]}
+];
+let lid=0;
+UNITS.forEach((u,ui)=>{u.ui=ui;u.lessons.forEach((l,li)=>{
+  l.id='L'+(++lid);l.n=lid;l.unit=u;l.li=li;
+  l.words=l.words.map(a=>({w:a[0],r:a[1],m:a[2],ex:a[3],exz:a[4],lesson:l}));
+  l.g.lesson=l;
+})});
+const LESSONS=UNITS.flatMap(u=>u.lessons);
+const WORDS=LESSONS.flatMap(l=>l.words);
+const WMAP=Object.fromEntries(WORDS.map(w=>[w.w,w]));
+const GRAMS=LESSONS.map(l=>l.g);
+
+/* ---------- icons ---------- */
+const I={
+ book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg>',
+ cards:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="14" height="15" rx="2.5"/><path d="M7 3h11.5A2.5 2.5 0 0 1 21 5.5V17"/></svg>',
+ gram:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>',
+ user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+ flame:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4.6 5 10a5 5 0 0 1-10 0c0-2.2 1.2-3.9 2-4.8.2 1.6 1 2.8 2 2.8 0-3 1-5.6 1-8z"/></svg>',
+ sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+ x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+ play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
+};
+
+/* ---------- state ---------- */
+const KEY='kotoba-n2-v1';
+const defState=()=>({xp:0,days:{},lessons:{},words:{},goal:50});
+let S=(()=>{try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&typeof r==='object')return Object.assign(defState(),r)}catch(e){}return defState()})();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const dk=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const todayXP=()=>S.days[dk(new Date())]||0;
+function streak(){const d=new Date();let n=0;if(!S.days[dk(d)])d.setDate(d.getDate()-1);while(S.days[dk(d)]){n++;d.setDate(d.getDate()-1)}return n}
+const learned=()=>Object.keys(S.words).filter(w=>WMAP[w]);
+const nextLesson=()=>LESSONS.find(l=>!S.lessons[l.id]?.done);
+let tab='learn';
+try{const h=location.hash.slice(1);if(['learn','review','grammar','me'].includes(h))tab=h}catch(e){}
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const opts=(ans,pool)=>shuffle([ans,...shuffle([...new Set(pool)].filter(x=>x!==ans)).slice(0,3)]);
+const ring=(p,size,sw,color)=>{const r=(size-sw)/2,c=2*Math.PI*r;return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle class="bgc" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${sw}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${sw}" stroke="${color}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-Math.min(1,p))}" transform="rotate(-90 ${size/2} ${size/2})"/></svg>`};
+const sayBtn=(t,cls='say',label='播放发音')=>`<button class="${cls}" data-say="${t}" aria-label="${label}">${I.sound}</button>`;
+const hl=(ex,w)=>{let k=w;if(!ex.includes(k))k=w.slice(0,-1);return ex.includes(k)?ex.replace(k,`<b>${k}</b>`):ex};
+const fillG=(s,k)=>s.replace('＿＿',`<mark>${k}</mark>`);
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2200)}
+
+let jaVoice=null;
+function pickVoice(){try{const v=speechSynthesis.getVoices();jaVoice=v.find(x=>/ja[-_]JP/i.test(x.lang))||v.find(x=>/^ja/i.test(x.lang))||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function say(t,rate=.92){
+  try{
+    if(!('speechSynthesis' in window)){toast('当前浏览器不支持语音播放');return}
+    speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=rate;if(jaVoice)u.voice=jaVoice;speechSynthesis.speak(u);
+  }catch(e){toast('语音播放失败')}
+}
+
+/* ---------- home views ---------- */
+function renderNav(){
+  const items=[['learn','学习',I.book],['review','复习',I.cards],['grammar','语法',I.gram],['me','我的',I.user]];
+  $('#nav').innerHTML=`<div class="logo"><div class="logo-mark">道</div><div><b>ことば道</b><small>JLPT N2</small></div></div>`+
+   items.map(([k,t,ic])=>`<button class="nav-btn ${k==='me'?'nav-me':''}" data-tab="${k}" ${tab===k?'aria-current="page"':''}>${ic}<span>${t}</span></button>`).join('');
+}
+function statsHTML(full){
+  const st=streak(),tx=todayXP(),g=S.goal,now=new Date();
+  const days=[...Array(7)].map((_,i)=>{const d=new Date(now);d.setDate(now.getDate()-6+i);return d});
+  const wk=['日','一','二','三','四','五','六'];
+  return `
+  <div class="panel">
+    <div class="streak"><div class="flame">${I.flame}</div><div><div class="eyebrow">连续学习</div><b style="font-size:22px;font-weight:900" class="num">${st} 天</b></div></div>
+    <div class="week">${days.map((d,i)=>`<div class="day ${S.days[dk(d)]?'on':''} ${i===6?'today':''}"><i>${S.days[dk(d)]?'✓':''}</i><span>${wk[d.getDay()]}</span></div>`).join('')}</div>
+  </div>
+  <div class="panel">
+    <div class="goal">${ring(tx/g,72,9,'var(--good)')}<div class="goal-txt"><div class="eyebrow">今日目标</div><b class="num">${tx} / ${g} XP</b><span>${tx>=g?'今天的目标已达成':'再拿 '+(g-tx)+' XP 达成目标'}</span></div></div>
+    <div class="chips" role="group" aria-label="每日目标">${[20,50,100].map(v=>`<button class="chip" data-goal="${v}" aria-pressed="${S.goal===v}">${v} XP</button>`).join('')}</div>
+  </div>
+  <div class="panel"><div class="stat-row">
+    <div class="stat"><b class="num">${S.xp}</b><span>总 XP</span></div>
+    <div class="stat"><b class="num">${learned().length}</b><span>已学单词</span></div>
+    <div class="stat"><b class="num">${LESSONS.filter(l=>S.lessons[l.id]?.done).length}/${LESSONS.length}</b><span>完成课程</span></div>
+  </div></div>
+  ${full?`${installPanel()}<div class="panel"><div class="eyebrow" style="margin-bottom:8px">备份进度</div><p style="color:var(--muted);font-size:13px;margin-bottom:12px">进度保存在本机${persisted?'（已开启持久存储）':''}。导出一个备份文件，换设备或清理浏览器后可以导入恢复。</p>
+    <div class="btn-row"><button class="btn btn-ghost" data-act="export">导出进度</button><button class="btn btn-ghost" data-act="import">导入进度</button></div></div>
+  <div class="panel" id="reset-box"><div class="eyebrow" style="margin-bottom:8px">重置</div><button class="danger" data-act="reset">重置全部进度</button></div>`:''}`;
+}
+function renderLearn(){
+  const nx=nextLesson();
+  const hero=nx?`<section class="hero" data-glyph="${nx.unit.glyph}">
+      <div><div class="eyebrow">继续学习 · 第 ${nx.unit.ui+1} 单元</div><h2>${nx.title}</h2><p>第 ${nx.n} 课 · ${nx.zh} · 5 个单词 + ${nx.g.p}</p></div>
+      <button class="btn btn-white" data-start="${nx.id}">${S.lessons[LESSONS[0].id]?.done?'开始学习':'开始第一课'}</button></section>`
+    :`<section class="hero" data-glyph="完"><div><div class="eyebrow">全部完成</div><h2>全部课程已完成</h2><p>去复习巩固学过的 ${learned().length} 个单词吧。</p></div><button class="btn btn-white" data-act="startReview">开始复习</button></section>`;
+  const strip=`<div class="strip stat-row panel">
+    <div class="stat"><b class="num" style="color:var(--sun)">${streak()} 天</b><span>连续学习</span></div>
+    <div class="stat"><b class="num">${todayXP()}/${S.goal}</b><span>今日 XP</span></div>
+    <div class="stat"><b class="num">${learned().length}</b><span>已学单词</span></div></div>`;
+  const units=UNITS.map(u=>{
+    const dn=u.lessons.filter(l=>S.lessons[l.id]?.done).length;
+    return `<section class="unit" style="--uc:var(${u.c})">
+      <div class="unit-h"><div class="glyph" aria-hidden="true">${u.glyph}</div><div><p>第 ${u.ui+1} 单元</p><h3>${u.title}</h3><p>${u.zh}</p></div><span class="uprog num">${dn}/${u.lessons.length} 课</span></div>
+      <div class="lessons">${u.lessons.map(l=>{
+        const rec=S.lessons[l.id],done=rec?.done,isNext=nx&&nx.id===l.id;
+        return `<button class="lrow ${done?'done':''} ${isNext?'next':''}" data-start="${l.id}">
+          <span class="ri">${ring(done?1:0,46,4,'var(--uc)')}<span class="ic num">${done?I.check.replace('<svg','<svg width="18" height="18"'):l.n}</span></span>
+          <span class="lt"><b>${l.title}</b><span>${l.zh} · 5 个单词 · ${l.g.p}</span></span>
+          ${done?`<span class="tag tag-done num">${rec.best}%</span>`:isNext?`<span class="tag tag-next">开始</span>`:`<span class="tag tag-new">未学</span>`}
+        </button>`}).join('')}</div></section>`}).join('');
+  return `<div class="page-h"><div><h1>N2 课程</h1><p>${UNITS.length} 个单元 · ${LESSONS.length} 课 · ${WORDS.length} 个单词 · ${GRAMS.length} 个语法</p></div></div>${strip}${hero}${units}`;
+}
+function renderReview(){
+  const ws=learned().map(w=>WMAP[w]).sort((a,b)=>(S.words[a.w]||0)-(S.words[b.w]||0));
+  if(!ws.length)return `<div class="page-h"><div><h1>单词复习</h1><p>按记忆强度安排复习</p></div></div>
+    <div class="panel empty"><b>还没有可以复习的单词</b>完成第一课后，学过的单词会出现在这里。<div style="margin-top:16px"><button class="btn btn-primary" data-start="${LESSONS[0].id}">开始第一课</button></div></div>`;
+  const weak=ws.filter(w=>(S.words[w.w]||0)<3).length;
+  return `<div class="page-h"><div><h1>单词复习</h1><p>${ws.length} 个单词 · ${weak} 个需要加强</p></div><button class="btn btn-primary" data-act="startReview">开始复习（${Math.min(8,ws.length)} 题）</button></div>
+   <div class="wlist">${ws.map(w=>{const s=S.words[w.w]||0;return `<div class="witem">
+     <div class="wt"><b>${w.w}</b><small>${w.r}</small><span>${w.m}</span></div>
+     <div class="str ${s<3?'weak':''}" aria-label="记忆强度 ${s}/4">${[0,1,2,3].map(i=>`<i class="${i<s?'on':''}"></i>`).join('')}</div>
+     ${sayBtn(w.w)}</div>`}).join('')}</div>`;
+}
+function renderGrammar(){
+  return `<div class="page-h"><div><h1>N2 语法</h1><p>${GRAMS.length} 个核心句型，学完对应课程后标记为已学</p></div></div>`+
+   GRAMS.map(g=>{const d=S.lessons[g.lesson.id]?.done;return `<article class="gcard" style="--uc:var(${g.lesson.unit.c})">
+     <div class="gcard-h"><h3>${g.p}</h3><span class="tag ${d?'tag-done':'tag-new'}">${d?'已学':'第 '+g.lesson.n+' 课'}</span></div>
+     <p class="m">${g.m}</p>
+     <div class="form"><span>接续</span><span class="jp">${g.f}</span></div>
+     ${g.ex.map(e=>`<div class="gex">${sayBtn(e[0].replace('＿＿',g.k))}<div><p class="jp">${fillG(e[0],g.k)}</p><p class="zh">${e[1]}</p></div></div>`).join('')}
+   </article>`}).join('');
+}
+function renderMe(){return `<div class="page-h"><div><h1>我的学习</h1><p>JLPT N2 · 每日目标 ${S.goal} XP</p></div></div>${statsHTML(true)}`}
+function render(){
+  renderNav();
+  $('#main').innerHTML=tab==='learn'?renderLearn():tab==='review'?renderReview():tab==='grammar'?renderGrammar():renderMe();
+  $('#aside').innerHTML=statsHTML(false);
+}
+
+/* ---------- lesson engine ---------- */
+let L=null;
+function buildLesson(l){
+  const w=l.words,g=l.g;
+  const vg=shuffle(w.filter(x=>x.ex.includes(x.w)))[0];
+  const q=[{t:'card',w:w[0]},{t:'card',w:w[1]},{t:'mc',w:w[0]},{t:'card',w:w[2]},{t:'listen',w:w[1]},{t:'card',w:w[3]},
+    {t:'reading',w:w[2]},{t:'card',w:w[4]},{t:'rmc',w:w[3]},{t:'listen',w:w[4]},{t:'match',ws:w},
+    {t:'tip',g},{t:'gap',g,e:g.ex[0]},{t:'gap',g,e:g.ex[1]},{t:'order',g}];
+  if(vg)q.push({t:'vgap',w:vg});
+  return q;
+}
+function buildReview(){
+  const ws=shuffle(learned().map(w=>WMAP[w])).sort((a,b)=>(S.words[a.w]||0)-(S.words[b.w]||0)).slice(0,8);
+  return shuffle(ws).map(w=>({t:['mc','rmc','listen','reading'][Math.random()*4|0],w}));
+}
+function prep(b){
+  const s={...b,sel:null,done:false};
+  if(b.t==='mc'){s.ans=b.w.m;s.opts=opts(s.ans,WORDS.map(x=>x.m))}
+  if(b.t==='rmc'){s.ans=b.w.w;s.opts=opts(s.ans,WORDS.map(x=>x.w))}
+  if(b.t==='listen'){s.ans=b.w.w;s.opts=opts(s.ans,[...b.w.lesson.words,...WORDS].map(x=>x.w).slice(0,9).concat(shuffle(WORDS).slice(0,3).map(x=>x.w)))}
+  if(b.t==='reading'){s.ans=b.w.r;s.opts=opts(s.ans,WORDS.map(x=>x.r))}
+  if(b.t==='gap'){s.ans=b.g.k;s.opts=opts(s.ans,GRAMS.map(x=>x.k))}
+  if(b.t==='vgap'){s.ans=b.w.w;s.opts=opts(s.ans,b.w.lesson.words.map(x=>x.w))}
+  if(b.t==='order'){const n=b.g.order[1].length;let bank;do{bank=shuffle([...Array(n).keys()])}while(n>1&&bank.every((v,i)=>v===i));s.bank=bank;s.sel=[]}
+  if(b.t==='match'){s.left=shuffle(b.ws);s.right=shuffle(b.ws.map(x=>x.m));s.ok=[];s.pl=null;s.pr=null;s.miss=0}
+  return s;
+}
+function startSession(mode,lesson){
+  const q=mode==='lesson'?buildLesson(lesson):buildReview();
+  if(!q.length){toast('先完成一课再来复习');return}
+  L={mode,lesson,queue:q,idx:0,xp:0,right:0,graded:0,wrongOnce:new Set(),newWords:0};
+  $('#lx').hidden=false;document.body.style.overflow='hidden';
+  showEx();
+}
+function closeSession(){L=null;$('#lx').hidden=true;$('#lx-sheet').hidden=true;document.body.style.overflow='';try{speechSynthesis.cancel()}catch(e){}render()}
+function progress(){
+  const p=L.idx/L.queue.length;$('#lx-bar').style.width=(p*100)+'%';
+  $('#lx-count').textContent=`${Math.min(L.idx+1,L.queue.length)}/${L.queue.length}`;
+}
+function optList(s,jp){return `<div class="opts">${s.opts.map((o,i)=>`<button class="opt ${jp?'jp':''}" data-opt="${i}"><span class="k num">${i+1}</span><span>${o}</span></button>`).join('')}</div>`}
+function exHTML(s){
+  const w=s.w;
+  switch(s.t){
+   case 'card':return `<div class="ex"><div class="eyebrow">新单词</div><div class="wcard">
+     ${sayBtn(w.w)}<div class="word"><ruby>${w.w}<rt>${w.r}</rt></ruby></div><div class="mean">${w.m}</div>
+     <div class="exs">${sayBtn(w.ex,'say','播放例句')}<div><p class="jp">${hl(w.ex,w.w)}</p><p class="zh">${w.exz}</p></div></div></div></div>`;
+   case 'mc':return `<div class="ex"><div class="eyebrow">选择意思</div><p class="q">「<span class="jp">${w.w}</span>」是什么意思？</p>${optList(s)}</div>`;
+   case 'rmc':return `<div class="ex"><div class="eyebrow">选择单词</div><p class="q">哪个词表示「${w.m}」？</p>${optList(s,true)}</div>`;
+   case 'reading':return `<div class="ex"><div class="eyebrow">选择读音</div><p class="q">「<span class="jp">${w.w}</span>」怎么读？</p>${optList(s,true)}</div>`;
+   case 'listen':return `<div class="ex"><div class="eyebrow">听力</div><p class="q">听录音，选出你听到的单词</p>
+     <div class="say-row"><button class="say-xl" data-say="${w.w}" aria-label="播放">${I.sound}</button><button class="say-slow" data-say="${w.w}" data-rate=".6" aria-label="慢速播放">慢速</button></div>${optList(s,true)}</div>`;
+   case 'tip':{const g=s.g;return `<div class="ex"><div class="eyebrow">语法要点</div><div class="tip">
+     <h2>${g.p}</h2><p class="m">${g.m}</p><div class="form"><span>接续</span><span class="jp">${g.f}</span></div>
+     ${g.ex.map(e=>`<div class="gex">${sayBtn(e[0].replace('＿＿',g.k))}<div><p class="jp">${fillG(e[0],g.k)}</p><p class="zh">${e[1]}</p></div></div>`).join('')}</div></div>`}
+   case 'gap':case 'vgap':{
+     const sent=s.t==='gap'?s.e[0]:w.ex.replace(w.w,'＿＿');const [a,b]=sent.split('＿＿');
+     return `<div class="ex"><div class="eyebrow">${s.t==='gap'?'语法填空':'单词填空'}</div><p class="q">选择合适的${s.t==='gap'?'语法':'单词'}填入空格</p>
+       <p class="sent">${a}<span class="blank ${s.sel==null?'empty-b':''}" id="blank">${s.sel??'＿'}</span>${b}</p>${optList(s,true)}</div>`}
+   case 'order':{const p=s.g.order[1];return `<div class="ex"><div class="eyebrow">组句</div><p class="q">把词块排成正确的句子</p><p style="color:var(--muted);font-weight:700">${s.g.order[0]}</p>
+     <div class="zone" id="zone">${s.sel.map((i,k)=>`<button class="tile" data-un="${k}">${p[i]}</button>`).join('')}</div>
+     <div class="bank">${s.bank.map(i=>`<button class="tile ${s.sel.includes(i)?'used':''}" data-bank="${i}">${p[i]}</button>`).join('')}</div></div>`}
+   case 'match':return `<div class="ex"><div class="eyebrow">配对</div><p class="q">把单词和意思连起来</p><div class="match">
+     <div class="col">${s.left.map((x,i)=>`<button class="mt jp ${s.ok.includes(x.w)?'ok':''} ${s.pl===i?'sel':''}" data-ml="${i}" ${s.ok.includes(x.w)?'disabled':''}>${x.w}</button>`).join('')}</div>
+     <div class="col">${s.right.map((m,i)=>{const ok=s.ok.some(w=>WMAP[w].m===m);return `<button class="mt ${ok?'ok':''} ${s.pr===i?'sel':''}" data-mr="${i}" ${ok?'disabled':''}>${m}</button>`}).join('')}</div></div></div>`;
+  }
+}
+function showEx(){
+  if(L.idx>=L.queue.length)return finish();
+  L.cur=prep(L.queue[L.idx]);
+  $('#lx-body').innerHTML=exHTML(L.cur);$('#lx-body').scrollTop=0;
+  progress();foot();
+  const s=L.cur;
+  if(s.t==='card'||s.t==='listen')setTimeout(()=>L&&L.cur===s&&say(s.w.w),250);
+}
+function canCheck(s){if(s.t==='order')return s.sel.length===s.g.order[1].length;return s.sel!=null}
+function foot(state,detail){
+  const f=$('#lx-foot'),s=L.cur;f.className='lx-foot';
+  if(state==='ok'||state==='no'){
+    f.classList.add(state);
+    f.innerHTML=`<div class="foot-in"><div class="fb"><span class="${state==='ok'?'ok-ic':'bad-ic'}">${state==='ok'?I.check:I.x}</span><div style="min-width:0"><b>${state==='ok'?['答对了！','太棒了！','完全正确！'][Math.random()*3|0]:'正确答案'}</b><p class="jp">${detail||''}</p></div></div>
+      <button class="btn ${state==='ok'?'btn-good':'btn-bad'}" data-act="next">继续</button></div>`;
+    return;
+  }
+  if(s.t==='card'||s.t==='tip'){f.innerHTML=`<div class="foot-in"><span></span><button class="btn btn-primary" data-act="next">继续</button></div>`;return}
+  if(s.t==='match'){f.innerHTML=`<div class="foot-in"><span style="color:var(--muted);font-weight:800" class="num">已配对 ${s.ok.length}/${s.left.length}</span><span></span></div>`;return}
+  f.innerHTML=`<div class="foot-in"><button class="btn btn-ghost" data-act="skip">跳过</button><button class="btn btn-primary" data-act="check" ${canCheck(s)?'':'disabled'}>检查</button></div>`;
+}
+function detailFor(s){
+  const w=s.w;
+  if(s.t==='gap')return `${s.e[0].replace('＿＿',s.ans)}<br><span style="font-family:var(--f-ui);color:var(--muted)">${s.e[1]}</span>`;
+  if(s.t==='vgap')return `${w.ex}<br><span style="font-family:var(--f-ui);color:var(--muted)">${w.exz}</span>`;
+  if(s.t==='order')return `${s.g.order[1].join('')}`;
+  return `${w.w}（${w.r}）＝ ${w.m}`;
+}
+function grade(ok){
+  const s=L.cur;s.done=true;
+  const key=L.idx;
+  L.graded++;
+  if(ok){L.right++;L.xp+=10;if(s.w)S.words[s.w.w]=Math.min(4,(S.words[s.w.w]||0)+1)}
+  else{L.queue.push(L.queue[L.idx]);if(s.w&&S.words[s.w.w]!=null)S.words[s.w.w]=Math.max(0,S.words[s.w.w]-1)}
+  document.querySelectorAll('#lx-body button').forEach(b=>{if(!b.dataset.say)b.disabled=true});
+  if(s.opts){document.querySelectorAll('#lx-body .opt').forEach(b=>{const v=s.opts[+b.dataset.opt];if(v===s.ans)b.classList.add('right');else if(v===s.sel)b.classList.add('wrong')})}
+  if(s.t==='gap'||s.t==='vgap'){const bl=$('#blank');bl.textContent=s.ans;bl.classList.remove('empty-b');bl.style.color=ok?'var(--good)':'var(--bad)';say((s.t==='gap'?s.e[0]:s.w.ex).replace('＿＿',s.ans))}
+  else if(s.t==='order')say(s.g.order[1].join(''));
+  else if(s.w&&ok)say(s.w.w);
+  foot(ok?'ok':'no',ok&&s.t!=='gap'&&s.t!=='vgap'?detailFor(s):detailFor(s));
+  progress();
+}
+function check(){const s=L.cur;if(s.done||!canCheck(s))return;
+  const ok=s.t==='order'?s.sel.map(i=>s.g.order[1][i]).join('')===s.g.order[1].join(''):s.sel===s.ans;grade(ok)}
+function next(){L.idx++;showEx()}
+function finish(){
+  const acc=L.graded?Math.round(L.right/L.graded*100):100;
+  let bonus=0,newW=0;
+  if(L.mode==='lesson'){
+    bonus=20;const prev=S.lessons[L.lesson.id];
+    S.lessons[L.lesson.id]={done:true,best:Math.max(prev?.best||0,acc)};
+    L.lesson.words.forEach(w=>{if(S.words[w.w]==null){S.words[w.w]=1;newW++}else if(S.words[w.w]<1)S.words[w.w]=1});
+  }
+  const gained=L.xp+bonus;S.xp+=gained;const k=dk(new Date());S.days[k]=(S.days[k]||0)+gained;save();
+  $('#lx-bar').style.width='100%';$('#lx-count').textContent='';
+  $('#lx-body').innerHTML=`<div class="ex done-screen"><div class="badge">${I.check}</div>
+    <h2>${L.mode==='lesson'?'第 '+L.lesson.n+' 课完成！':'复习完成！'}</h2>
+    <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.g.p}`:'记忆强度已更新'}</p>
+    <div class="tiles"><div><b class="num" style="color:var(--sun)">+${gained}</b><span>XP</span></div><div><b class="num" style="color:var(--good)">${acc}%</b><span>正确率</span></div><div><b class="num" style="color:var(--brand)">${L.mode==='lesson'?newW:L.graded}</b><span>${L.mode==='lesson'?'新单词':'复习单词'}</span></div></div>
+    <p style="color:var(--muted);font-size:13px" class="num">连续学习 ${streak()} 天 · 今日 ${todayXP()}/${S.goal} XP</p></div>`;
+  const nx=nextLesson();
+  $('#lx-foot').className='lx-foot';
+  $('#lx-foot').innerHTML=`<div class="foot-in"><button class="btn btn-ghost" data-act="close">返回课程</button>${L.mode==='lesson'&&nx?`<button class="btn btn-primary" data-start="${nx.id}">下一课</button>`:''}</div>`;
+  L.finished=true;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.say){say(t.dataset.say,t.dataset.rate?+t.dataset.rate:.92);return}
+  if(t.dataset.tab){tab=t.dataset.tab;try{history.replaceState(null,'','#'+tab)}catch(err){}render();window.scrollTo(0,0);return}
+  if(t.dataset.goal){S.goal=+t.dataset.goal;save();render();return}
+  if(t.dataset.start){const l=LESSONS.find(x=>x.id===t.dataset.start);if(L)L=null;startSession('lesson',l);return}
+  const act=t.dataset.act;
+  if(act==='startReview'){startSession('review');return}
+  if(act==='reset'){$('#reset-box').innerHTML=`<p style="font-weight:800;margin-bottom:10px">确定要清空所有进度吗？此操作无法撤销。</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-bad" data-act="resetYes">清空进度</button><button class="btn btn-ghost" data-act="resetNo">取消</button></div>`;return}
+  if(act==='resetYes'){S=defState();save();render();toast('进度已清空');return}
+  if(act==='resetNo'){render();return}
+  if(act==='export'){exportProgress();return}
+  if(act==='import'){$('#import-file').click();return}
+  if(act==='install'){installApp();return}
+  if(!L)return;
+  if(act==='close'){closeSession();return}
+  if(act==='next'){next();return}
+  if(act==='check'){check();return}
+  if(act==='skip'){if(!L.cur.done)grade(false);return}
+  const s=L.cur;if(s.done)return;
+  if(t.dataset.opt!=null){s.sel=s.opts[+t.dataset.opt];
+    document.querySelectorAll('#lx-body .opt').forEach(b=>b.classList.toggle('sel',b===t));
+    const bl=$('#blank');if(bl){bl.textContent=s.sel;bl.classList.remove('empty-b')}
+    foot();return}
+  if(t.dataset.bank!=null){const i=+t.dataset.bank;if(!s.sel.includes(i)){s.sel.push(i);$('#lx-body').innerHTML=exHTML(s);foot()}return}
+  if(t.dataset.un!=null){s.sel.splice(+t.dataset.un,1);$('#lx-body').innerHTML=exHTML(s);foot();return}
+  if(t.dataset.ml!=null||t.dataset.mr!=null){
+    if(t.dataset.ml!=null){s.pl=+t.dataset.ml;say(s.left[s.pl].w)}else s.pr=+t.dataset.mr;
+    if(s.pl!=null&&s.pr!=null){
+      const w=s.left[s.pl],m=s.right[s.pr];
+      if(w.m===m){s.ok.push(w.w);s.pl=s.pr=null;$('#lx-body').innerHTML=exHTML(s);
+        if(s.ok.length===s.left.length){s.done=true;L.graded++;L.right+=s.miss===0?1:0;L.xp+=10;s.left.forEach(x=>S.words[x.w]!=null&&(S.words[x.w]=Math.min(4,S.words[x.w]+1)));
+          foot(s.miss===0?'ok':'ok',s.miss?`配对完成，出错 ${s.miss} 次`:'全部配对正确');return}
+      }else{s.miss++;const a=document.querySelector(`[data-ml="${s.pl}"]`),b=document.querySelector(`[data-mr="${s.pr}"]`);s.pl=s.pr=null;
+        [a,b].forEach(x=>{x.classList.remove('sel');x.classList.add('no')});setTimeout(()=>{if(L&&L.cur===s){$('#lx-body').innerHTML=exHTML(s)}},380);foot();return}
+    }else{$('#lx-body').innerHTML=exHTML(s)}
+    foot();return}
+});
+$('#lx-close').innerHTML=I.x;
+$('#lx-close').addEventListener('click',e=>{e.stopPropagation();if(!L||L.finished){closeSession();return}$('#lx-sheet').hidden=false});
+$('#sheet-stay').addEventListener('click',e=>{e.stopPropagation();$('#lx-sheet').hidden=true});
+$('#sheet-quit').addEventListener('click',e=>{e.stopPropagation();closeSession()});
+document.addEventListener('keydown',e=>{
+  if(!L||$('#lx-sheet').hidden===false)return;
+  if(e.key==='Enter'){const b=$('#lx-foot [data-act="next"]')||$('#lx-foot [data-act="check"]:not(:disabled)')||$('#lx-foot [data-start]');if(b){e.preventDefault();b.click()}return}
+  if(/^[1-4]$/.test(e.key)){const b=document.querySelector(`#lx-body .opt[data-opt="${+e.key-1}"]`);if(b&&!b.disabled)b.click()}
+  if(e.key==='Escape')$('#lx-close').click();
+});
+
+/* ---------- PWA: install, persistent storage, backup ---------- */
+let installEvt=null,persisted=false;
+const standalone=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+function installPanel(){
+  if(standalone())return `<div class="panel"><div class="eyebrow" style="margin-bottom:6px">App</div><p style="font-weight:800">已作为 App 运行</p></div>`;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  return `<div class="panel"><div class="eyebrow" style="margin-bottom:8px">安装 App</div>
+    ${installEvt?`<p style="color:var(--muted);font-size:13px;margin-bottom:12px">安装到桌面或主屏幕，离线也能学习。</p><button class="btn btn-primary" data-act="install">安装 ことば道</button>`
+    :`<p style="color:var(--muted);font-size:13px">${ios?'在 Safari 中点「分享」→「添加到主屏幕」。':'在 Chrome / Edge 地址栏右侧点安装图标，或在浏览器菜单里选「安装应用」。需要通过 http://localhost 或 https 打开本页。'}</p>`}</div>`;
+}
+async function installApp(){if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(e){}installEvt=null;render()}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(tab==='me')render()});
+window.addEventListener('appinstalled',()=>{installEvt=null;toast('已安装 ことば道');render()});
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+try{navigator.storage?.persist?.().then(v=>{persisted=!!v;if(tab==='me')render()}).catch(()=>{})}catch(e){}
+
+function exportProgress(){
+  const data=JSON.stringify({app:'kotoba-n2',version:1,exported:new Date().toISOString(),state:S},null,2);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download=`kotoba-n2-进度-${dk(new Date())}.json`;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast('已导出进度文件');
+}
+const imp=document.createElement('input');imp.type='file';imp.accept='application/json,.json';imp.id='import-file';imp.hidden=true;document.body.appendChild(imp);
+imp.addEventListener('change',async()=>{
+  const f=imp.files[0];imp.value='';if(!f)return;
+  try{
+    const j=JSON.parse(await f.text()),st=j&&j.app==='kotoba-n2'?j.state:null;
+    if(!st||typeof st!=='object'||typeof st.lessons!=='object'||typeof st.words!=='object')throw 0;
+    S=Object.assign(defState(),st);save();render();toast('进度已恢复');
+  }catch(e){toast('这个文件不是 ことば道 的进度备份')}
+});
+
+render();
+</script>
+</body>
+</html>
