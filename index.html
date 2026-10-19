@@ -303,6 +303,7 @@ mark{background:color-mix(in srgb,var(--brand) 18%,transparent);color:inherit;bo
 .opt.long .k{margin-top:2px}
 .opt u{text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:var(--brand)}
 .sent.big{font-size:30px;text-align:center}
+.sign{display:flex;justify-content:center;margin:4px 0 14px}.sign svg{width:132px;height:auto}
 body{margin:0}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
@@ -839,6 +840,12 @@ function yearItems(y){
   POOL.G.forEach(g=>{if(g.ys.includes(y))q.push({t:'gap',g,e:g.ex[0],y})});
   const order='rhkcpug';return q.sort((a,b)=>order.indexOf(a.t==='gap'?'g':a.t[1])-order.indexOf(b.t==='gap'?'g':b.t[1]));
 }
+/* 仮免 学科 (exam-data.js KARI_SETS): ○× questions, kept in test order; 'all' mixes every set */
+const KARI=window.KARI_SETS||[];
+function kariItems(id){
+  const q=(id==='all'?KARI:KARI.filter(k=>k.id===id)).flatMap(k=>k.qs.map(([no,q,a,exp,zh,img])=>({t:'tf',set:k.title,no,q,a,exp,zh,img})));
+  return id==='all'?shuffle(q):q;
+}
 function typeItems(t,n=10){
   const pool=shuffle(POOL[t]).slice(0,n);
   if(t==='G')return pool.map(g=>({t:'gap',g,e:g.ex[Math.random()*g.ex.length|0],y:g.ys[Math.random()*g.ys.length|0]}));
@@ -857,7 +864,11 @@ function renderExam(){
   </div></section>
   <section class="xsec"><h2 class="xh">按考试回顾</h2><p class="note">把某一次考试的全部考点做成一套练习，题量与真题的文字・词汇・语法部分相近。</p><div class="ylist">
    ${EXAM_YEARS.slice().reverse().map(y=>`<button class="yrow" data-exam="y${y}"><span class="ylabel"><b>${YF(y)}</b><span class="num">${yearItems(y).length} 题</span></span>${bestOf('y'+y)}</button>`).join('')}
-  </div></section>`;
+  </div></section>
+  ${KARI.length?`<section class="xsec"><h2 class="xh">仮免 学科 · 错题</h2><p class="note">仮免前効果測定里做错的题，全部是判断题：判断题干说法是否正确（○ / ×）。</p><div class="ylist">
+   ${KARI.map(k=>`<button class="yrow" data-exam="k${k.id}"><span class="ylabel"><b class="jp">${k.title}</b><span class="num">${k.qs.length} 题</span></span>${bestOf('k'+k.id)}</button>`).join('')}
+   <button class="yrow" data-exam="kall"><span class="ylabel"><b>全部错题（打乱顺序）</b><span class="num">${kariItems('all').length} 题</span></span>${bestOf('kall')}</button>
+  </div></section>`:''}`;
 }
 function renderMe(){return `<div class="page-h"><div><h1>我的学习</h1><p>JLPT N2 · 每日目标 ${S.goal} XP</p></div></div>${statsHTML(true)}`}
 function render(){
@@ -895,6 +906,7 @@ function prep(b){
   if(b.t==='xc'){s.ans=x.w;s.opts=opts(x.w,POOL.C.filter(e=>posG(e.pos)===posG(x.pos)).map(e=>e.w))}
   if(b.t==='xp'){s.ans=x.syn;s.opts=opts(x.syn,POOL.P.map(e=>e.syn))}
   if(b.t==='xu'){s.ans=x.ex;s.opts=shuffle([x.ex,...shuffle(POOL.U.filter(e=>e!==x&&posG(e.pos)===posG(x.pos))).slice(0,3).map(e=>e.ex.replace(e.w,x.w))])}
+  if(b.t==='tf'){s.ans=b.a;s.opts=['o','x']}
   if(b.t==='vgap'){s.ans=b.w.w;s.opts=opts(s.ans,b.w.lesson.words.map(x=>x.w))}
   if(b.t==='order'){const n=b.g.order[1].length;let bank;do{bank=shuffle([...Array(n).keys()])}while(n>1&&bank.every((v,i)=>v===i));s.bank=bank;s.sel=[]}
   if(b.t==='match'){s.left=shuffle(b.ws);s.right=shuffle(b.ws.map(x=>x.m));s.ok=[];s.pl=null;s.pr=null;s.miss=0}
@@ -914,6 +926,11 @@ function progress(){
   $('#lx-count').textContent=`${Math.min(L.idx+1,L.queue.length)}/${L.queue.length}`;
 }
 function optList(s,jp,fmt=o=>o,cls=''){return `<div class="opts">${s.opts.map((o,i)=>`<button class="opt ${jp?'jp':''} ${cls}" data-opt="${i}"><span class="k num">${i+1}</span><span>${fmt(o)}</span></button>`).join('')}</div>`}
+const TF={o:'○　正しい',x:'×　誤り'};
+/* road signs drawn inline for questions that show one */
+const SIGNS={bike:`<svg viewBox="0 0 120 108" role="img" aria-label="横断歩道・自転車横断帯の標識"><path d="M60 6 L114 100 H6 Z" fill="#1f4fa8" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+  <g fill="#fff"><circle cx="58" cy="33" r="5.5"/><path transform="translate(6 5)" d="M47 35h10l5 14-4 2-4-9v14l5 15h-6l-4-12-4 12h-6l5-15V44l-3 7-4-2z"/><rect x="22" y="88" width="12" height="5"/><rect x="40" y="88" width="12" height="5"/><rect x="58" y="88" width="12" height="5"/><rect x="76" y="88" width="12" height="5"/></g>
+  <g fill="none" stroke="#fff" stroke-width="3"><circle cx="58" cy="76" r="8"/><circle cx="86" cy="76" r="8"/><path d="M58 76l9-11h13l6 11M67 65l5 11h14M76 60h6"/></g></svg>`};
 const xline=s=>`<div class="eyebrow">${TYPES[s.t==='gap'?'G':s.t[1].toUpperCase()][0]}${s.y?` · ${YF(s.y)}真题考点`:''}</div>`;
 function exHTML(s){
   const w=s.w,x=s.x;
@@ -925,6 +942,8 @@ function exHTML(s){
        <p class="sent">${a}<span class="blank empty-b" id="blank">＿</span>${b}</p>${optList(s,true)}</div>`}
    case 'xp':return `<div class="ex">${xline(s)}<p class="q">与「<span class="jp">${x.w}</span>」意思最接近的是？</p>${optList(s,true)}</div>`;
    case 'xu':return `<div class="ex">${xline(s)}<p class="q">「<span class="jp">${x.w}</span>」用法正确的句子是？</p>${optList(s,true,o=>o.replace(x.w,`<u>${x.w}</u>`),'long')}</div>`;
+   case 'tf':return `<div class="ex"><div class="eyebrow">${s.set} · 第 ${s.no} 問 · 判断题</div><p class="q">这句话说得对吗？</p>
+     ${s.img?`<div class="sign">${SIGNS[s.img]}</div>`:''}<p class="sent">${s.q}</p>${optList(s,true,o=>TF[o])}</div>`;
    case 'card':return `<div class="ex"><div class="eyebrow">新单词</div><div class="wcard">
      ${sayBtn(w.w)}<div class="word"><ruby>${w.w}<rt>${w.r===w.w?'':w.r}</rt></ruby></div><div class="mean">${w.m}</div>${examChip(w.w)}
      <div class="exs">${sayBtn(w.ex,'say','播放例句')}<div><p class="jp">${hl(w.ex,w.w)}</p><p class="zh">${w.exz}</p></div></div></div></div>`;
@@ -977,6 +996,7 @@ function detailFor(s){
   const w=s.w,x=s.x;
   if(s.t==='xc'||s.t==='xu')return `${x.ex}${zhLine(`${x.w}（${x.r}）${x.m} · ${x.exz}`)}`;
   if(s.t==='xp')return `${x.w} ≈ ${x.syn}${zhLine(`${x.r} · ${x.m}`)}`;
+  if(s.t==='tf')return `正解：${s.ans==='o'?'○':'×'}　${s.exp}${zhLine(s.zh)}`;
   if(s.t==='xr'||s.t==='xh'||s.t==='xk')return `${x.w}（${x.r}）${zhLine(x.m)}`;
   if(s.t==='gap')return `${s.e[0].replace('＿＿',s.ans)}<br><span style="font-family:var(--f-ui);color:var(--muted)">${s.e[1]}</span>`;
   if(s.t==='vgap')return `${w.ex}<br><span style="font-family:var(--f-ui);color:var(--muted)">${w.exz}</span>`;
@@ -1049,7 +1069,10 @@ document.addEventListener('click',e=>{
   if(t.dataset.goal){S.goal=+t.dataset.goal;save();render();return}
   if(t.dataset.start){const l=LESSONS.find(x=>x.id===t.dataset.start);if(L)L=null;startSession('lesson',l);return}
   if(t.dataset.exam){const key=t.dataset.exam;if(L)L=null;
-    const exam=key[0]==='y'?{key,title:`${YF(key.slice(1))} 真题考点`,queue:yearItems(key.slice(1))}:{key,title:`${TYPES[key][0]} · ${TYPES[key][1]}`,queue:typeItems(key)};
+    const kid=key[0]==='k'&&key.slice(1),kset=KARI.find(k=>k.id===kid);
+    const exam=key[0]==='y'?{key,title:`${YF(key.slice(1))} 真题考点`,queue:yearItems(key.slice(1))}
+      :kid?{key,title:kset?kset.title:'仮免 学科 · 全部错题',queue:kariItems(kid)}
+      :{key,title:`${TYPES[key][0]} · ${TYPES[key][1]}`,queue:typeItems(key)};
     startSession('exam',null,exam);return}
   const act=t.dataset.act;
   if(act==='startReview'){startSession('review');return}
