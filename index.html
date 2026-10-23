@@ -277,6 +277,24 @@ mark{background:color-mix(in srgb,var(--brand) 18%,transparent);color:inherit;bo
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 /* 真题 */
+.cbar{position:relative;align-self:start}
+.cpick{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:900}
+.cpick:hover{border-color:var(--brand)}
+.cpick .caret{color:var(--muted);font-size:12px}
+.cmark{width:32px;height:32px;border-radius:50%;background:var(--cc);color:#fff;display:grid;place-items:center;font-family:var(--f-jp);font-weight:700;font-size:14px;flex:none}
+.cmenu{position:absolute;top:calc(100% + 8px);left:0;z-index:30;width:min(340px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:0 12px 32px rgba(10,16,28,.18);display:flex;flex-direction:column;gap:4px}
+.copt{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;text-align:left}
+.copt:hover{background:var(--sunk)}
+.copt[aria-current="true"]{background:var(--brand-soft)}
+.copt .cmark{width:40px;height:40px;font-size:16px;color:#fff}
+.copt b{display:block;font-weight:900;color:var(--ink)}
+.copt span{color:var(--muted);font-size:13px}
+.kchart{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+.kcell{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface)}
+.kcell:hover{border-color:var(--brand)}
+.kcell b{font-family:var(--f-jp);font-size:24px;line-height:1.2}
+.kcell span{font-size:12px;font-weight:800;color:var(--muted)}
+.kcell.on{border-color:color-mix(in srgb,var(--good) 55%,var(--line))}
 .part-h{display:flex;flex-direction:column;gap:2px;padding-top:12px;border-top:2px dashed var(--line)}
 .part-h h2{font-size:22px;font-weight:900}
 .part-h p{color:var(--muted);font-size:14px}
@@ -337,6 +355,7 @@ body{margin:0}
 <div class="toast" id="toast" hidden></div>
 
 <script src="exam-data.js"></script>
+<script src="basic-data.js"></script>
 <script>
 /* ---------- content: JLPT N2 ---------- */
 const UNITS=[
@@ -436,7 +455,7 @@ const UNITS=[
     ex:[['引き受けた＿＿、最後まで責任を持ってやります。','既然接下了，就负责到底。'],['日本に住む＿＿、地震への備えは欠かせない。','既然住在日本，防震准备就必不可少。']],
     order:['既然决定参赛，就想拿冠军。',['出場する','からには','優勝を','目指したい。']]}}]},
  /* late:true → lesson IDs are assigned after the 真题 units so saved progress keeps its keys */
- {glyph:'車',title:'合宿免許',zh:'集训考驾照',c:'--u1',late:true,lessons:[
+ {glyph:'車',title:'合宿免許',zh:'集训考驾照',c:'--u1',late:true,course:'life',lessons:[
   {title:'合宿に申し込む',zh:'报名集训',words:[
    ['合宿','がっしゅく','集训；寄宿培训','夏休みに二週間の合宿で運転免許を取った。','暑假参加了两周的集训，拿到了驾照。'],
    ['免許','めんきょ','执照；驾照','免許を取ったら、家族で旅行に行きたい。','拿到驾照后，想和家人一起去旅行。'],
@@ -464,7 +483,7 @@ const UNITS=[
    g:{p:'〜に基づいて',k:'に基づいて',m:'根据…；基于…',f:'名詞 ＋ に基づいて',
     ex:[['採点は決められた基準＿＿行われる。','评分按照规定的标准进行。'],['指導員は経験＿＿アドバイスしてくれた。','教练根据自己的经验给了我建议。']],
     order:['根据法律规定，必须系安全带。',['法律に','基づいて','シートベルトを','しなければならない。']]}}]},
- {glyph:'研',title:'研究所で働く',zh:'NIES 研究职：公募到面试',c:'--u2',late:true,lessons:[
+ {glyph:'研',title:'研究所で働く',zh:'NIES 研究职：公募到面试',c:'--u2',late:true,course:'life',lessons:[
   {title:'公募を読む',zh:'读懂招聘公告',words:[
    ['公募','こうぼ','公开招聘','研究所のホームページで研究員の公募を見つけた。','在研究所的官网上看到了研究员的公开招聘。'],
    ['応募','おうぼ','应聘；报名','随時受付なので、早めに応募したほうがいい。','因为是随时受理，最好早点投递。'],
@@ -510,7 +529,7 @@ const UNITS=[
    g:{p:'〜を生かして',k:'を生かして',m:'发挥…；利用…',f:'名詞 ＋ を生かして',
     ex:[['留学の経験＿＿、国際的な研究に参加したい。','想利用留学经验参与国际研究。'],['プログラミングの技術＿＿、データ解析を担当している。','发挥编程技术，负责数据分析。']],
     order:['想发挥自己的专业为社会做贡献。',['自分の','専門を','生かして','社会に貢献したい。']]}}]},
- {glyph:'所',title:'研究所の毎日',zh:'NIES 入职后：日常与研究',c:'--u5',late:true,lessons:[
+ {glyph:'所',title:'研究所の毎日',zh:'NIES 入职后：日常与研究',c:'--u5',late:true,course:'life',lessons:[
   {title:'着任する',zh:'入职到岗',words:[
    ['入所','にゅうしょ','入职（研究所等）','入所式で所長のあいさつを聞いた。','在入职仪式上听了所长的致辞。'],
    ['配属','はいぞく','分配（到部门）','私は環境情報部に配属された。','我被分配到了环境信息部。'],
@@ -557,7 +576,7 @@ const UNITS=[
     ex:[['査読者の指摘＿＿、論文を修正した。','根据审稿人的指正修改了论文。'],['これまでの結果＿＿、次の計画を立てる。','在目前结果的基础上制定下一步计划。']],
     order:['根据讨论的内容重新审视了计划。',['議論の','内容を','踏まえて','計画を見直した。']]}}]},
  /* 仮免前 効果測定1 の错题 */
- {glyph:'仮',title:'効果測定1の復習',zh:'仮免效果测定①：错题整理',c:'--u3',late:true,lessons:[
+ {glyph:'仮',title:'効果測定1の復習',zh:'仮免效果测定①：错题整理',c:'--u3',late:true,course:'life',lessons:[
   {title:'追い越しと優先',zh:'超车与让路',words:[
    ['追い越し','おいこし','超车','前の車が自動車を追い越そうとしているときは、追い越しを始めてはならない。','前车正要超车时，不得开始超车（双重超车，非常危险）。'],
    ['方向指示器','ほうこうしじき','转向灯','追い越すときは、まず後方と対向車を確認してから方向指示器を出す。','超车时，先确认后方和对向车，再打转向灯。'],
@@ -586,7 +605,7 @@ const UNITS=[
     ex:[['上り下り＿＿、がけ側の車が安全な場所に止まって道をゆずる。','不论上坡下坡，悬崖侧的车都在安全处停下让路。'],['天気＿＿、運転前には必ず点検をする。','不论天气如何，开车前一定要检查。']],
     order:['不论年龄，都必须系安全带。',['年齢に','関係なく','シートベルトを','しなければならない。']]}}]},
  /* 仮免前 効果測定2 の错题 */
- {glyph:'免',title:'効果測定2の復習',zh:'仮免效果测定②：错题整理',c:'--u4',late:true,lessons:[
+ {glyph:'免',title:'効果測定2の復習',zh:'仮免效果测定②：错题整理',c:'--u4',late:true,course:'life',lessons:[
   {title:'二輪車と座席',zh:'二轮车与座椅',words:[
    ['スロットル','スロットル','（二轮车的）油门','低速で走るときにスロットルを完全に戻すと、安定を失うことがある。','低速行驶时把油门完全回位，可能会失去平衡。'],
    ['急発進','きゅうはっしん','急起步；猛然起步','オートマチック二輪車は、スロットルを急に回すと急発進するおそれがある。','自动挡二轮车猛拧油门有猛然起步的危险。'],
@@ -615,7 +634,7 @@ const UNITS=[
     ex:[['＿＿助手席に子どもを乗せるときは、座席を後ろに下げる。','不得已让孩子坐副驾驶时，要把座椅往后调。'],['前に障害物があり、＿＿道路の右側を通った。','前方有障碍物，不得已从道路右侧通过。']],
     order:['因为故障，不得已把车停在了路边。',['故障のため','やむを得ず','路肩に','車を止めた。']]}}]},
  /* 仮免前 効果測定3 の错题 */
- {glyph:'標',title:'効果測定3の復習',zh:'仮免效果测定③：错题整理',c:'--u5',late:true,lessons:[
+ {glyph:'標',title:'効果測定3の復習',zh:'仮免效果测定③：错题整理',c:'--u5',late:true,course:'life',lessons:[
   {title:'標識と信号',zh:'标志与信号',words:[
    ['標識','ひょうしき','（道路）标志','この標識は「追越し禁止」ではなく、「追越しのための右側部分はみ出し通行禁止」だ。','这个标志不是“禁止超车”，而是“禁止为超车而驶出右侧”。'],
    ['警音器','けいおんき','喇叭','「警笛鳴らせ」の標識がある場所では、警音器を鳴らさなければならない。','有“鸣笛”标志的地方必须按喇叭。'],
@@ -643,7 +662,7 @@ const UNITS=[
    g:{p:'〜に面した',k:'に面した',m:'面向…的；临…的',f:'名詞 ＋ に面した ＋ 名詞',
     ex:[['道路＿＿駐車場に入るときは、歩道を横切ってもよい。','进入临街的停车场时可以穿过人行道。'],['大通り＿＿コンビニに車を止めた。','把车停在了面向大街的便利店。']],
     order:['为了进入临街的加油站而穿过人行道。',['道路に','面した','ガソリンスタンドに入るため','歩道を横切る。']]}}]},
- {glyph:'停',title:'効果測定4の復習',zh:'仮免效果测定④：错题整理',c:'--u1',late:true,lessons:[
+ {glyph:'停',title:'効果測定4の復習',zh:'仮免效果测定④：错题整理',c:'--u1',late:true,course:'life',lessons:[
   {title:'標識と標示',zh:'标志与路面标示',words:[
    ['停止線','ていしせん','停止线','「止まれ」の標識があるときは、停止線の直前で一時停止する。','有“停”标志时，要在停止线前暂时停车。'],
    ['標示','ひょうじ','路面标示','黄色の枠に斜線が引かれた標示は「立入り禁止部分」だ。','黄框内画斜线的路面标示是“禁止驶入区域”。'],
@@ -671,7 +690,7 @@ const UNITS=[
    g:{p:'〜ずに',k:'ずに',m:'不…（就）；没…而…',f:'動詞ない形 ＋ ずに（する→せずに）',
     ex:[['進路を変え＿＿前の車の前に出るのは「追い抜き」だ。','不改变路线而驶到前车前方，叫“追越（超越）”。'],['安全を確かめ＿＿合図をしてはいけない。','不能不确认安全就打信号。']],
     order:['不确认后方就变道很危险。',['後方を','確かめずに','進路を変えるのは','危険だ。']]}}]},
- {glyph:'動',title:'仮免の動詞・副詞',zh:'仮免错题里的平假名动词・副词',c:'--u2',late:true,lessons:[
+ {glyph:'動',title:'仮免の動詞・副詞',zh:'仮免错题里的平假名动词・副词',c:'--u2',late:true,course:'life',lessons:[
   {title:'車を動かす動詞',zh:'开车时的动作',words:[
    ['ゆずる','ゆずる','让（路）；让给','近くに待避所があれば、上りの車でも道をゆずるのがよい。','附近有避让处的话，即使是上坡车也最好让路。'],
    ['寄る','よる','靠（向一边）','左折するときは、あらかじめ道路の左端に寄る。','左转时要提前靠到道路左边。'],
@@ -699,7 +718,7 @@ const UNITS=[
    g:{p:'〜まま',k:'まま',m:'保持…的状态（不变）',f:'動詞た形／名詞の／その ＋ まま',
     ex:[['踏切の中では、発進したときのギアの＿＿通過する。','在道口内保持起步时的挡位通过。'],['歩行者がいるかわからないのに、その＿＿の速度で進んではいけない。','不知道有没有行人时，不能保持原速前进。']],
     order:['通园巴士来了，却就那样继续行驶了。',['通園バスが来たのに','その','まま','通行した。']]}}]},
- {glyph:'従',title:'効果測定5・6の復習',zh:'仮免效果测定⑤⑥：错题整理',c:'--u3',late:true,lessons:[
+ {glyph:'従',title:'効果測定5・6の復習',zh:'仮免效果测定⑤⑥：错题整理',c:'--u3',late:true,course:'life',lessons:[
   {title:'追い越しと進路',zh:'超车与行驶路线',words:[
    ['戻る','もどる','回到；返回','前車の進行を妨げなければ左側に戻れないときは、追い越しをしてはならない。','如果不妨碍前车就回不到左侧，就不能超车。'],
    ['避ける','さける','避开；躲开','緊急自動車が近づいてきたら、交差点を避けて一時停止する。','紧急车辆靠近时，要避开交叉口暂时停车。'],
@@ -750,18 +769,30 @@ UNITS.forEach(u=>u.lessons.forEach(l=>{if(BASE_Y[l.g.k])l.g.ys=BASE_Y[l.g.k].spl
   return {title:l.title,zh:l.zh,words:l.w.split(' ').map(w=>{const e=EXV[w]||KMAP[w];return [w,e.r,e.m,e.ex,e.exz]}),
     g:{p:g.p,k:g.k,m:g.m,f:g.f,ex:g.ex,order:g.order,ys:g.ys}}})}));
 
+(window.BASIC_UNITS||[]).forEach(u=>UNITS.push({...u,late:true,lessons:u.lessons.map(l=>l.k?{title:l.title,zh:l.zh,kana:true,
+  words:l.k.split(';').map(x=>{const [w,m,ex,exz]=x.split('|');return [w,w,m,ex,exz]})}:l)}));
+
 let lid=0;
 [...UNITS.filter(u=>!u.late),...UNITS.filter(u=>u.late)].forEach(u=>u.lessons.forEach((l,li)=>{
   l.id='L'+(++lid);l.unit=u;l.li=li;
   l.words=l.words.map(a=>({w:a[0],r:a[1],m:a[2],ex:a[3],exz:a[4],lesson:l}));
-  l.g.lesson=l;
+  if(l.g)l.g.lesson=l;
 }));
-UNITS.forEach((u,ui)=>u.ui=ui);
+/* 课程模块（像 Busuu 那样切换）：未标 course 的单元属于 N2；单元编号和课号在各自课程内计算 */
+const COURSES={
+  kana:{name:'五十音',glyph:'あ',c:'--u3',desc:'平假名・片假名・浊音・拗音',gram:'五十音图'},
+  n5:{name:'JLPT N5',glyph:'N5',c:'--u2',desc:'入门词汇和基础句型'},
+  n4:{name:'JLPT N4',glyph:'N4',c:'--u5',desc:'初级词汇和常用句型'},
+  n3:{name:'JLPT N3',glyph:'N3',c:'--u4',desc:'中级词汇和语法'},
+  n2:{name:'JLPT N2',glyph:'N2',c:'--u1',desc:'词汇・语法・历年真题考点',exam:'真题'},
+  life:{name:'日常生活',glyph:'暮',c:'--u4',desc:'驾照集训・仮免学科・研究所工作',exam:'仮免'}
+};
+UNITS.forEach(u=>{u.course=u.course||'n2'});
+Object.keys(COURSES).forEach(c=>{let n=0;UNITS.filter(u=>u.course===c).forEach((u,ui)=>{u.ui=ui;u.lessons.forEach(l=>l.n=++n)})});
 const LESSONS=UNITS.flatMap(u=>u.lessons);
-LESSONS.forEach((l,i)=>l.n=i+1);
 const WORDS=LESSONS.flatMap(l=>l.words);
 const WMAP=Object.fromEntries(WORDS.map(w=>[w.w,w]));
-const GRAMS=LESSONS.map(l=>l.g);
+const GRAMS=LESSONS.map(l=>l.g).filter(Boolean);
 const ALLK=[...new Set([...GRAMS,...EXG].map(g=>g.k))];
 
 /* drill pools per question type */
@@ -834,14 +865,21 @@ const I={
 
 /* ---------- state ---------- */
 const KEY='kotoba-n2-v1';
-const defState=()=>({xp:0,days:{},lessons:{},words:{},goal:50});
+const defState=()=>({xp:0,days:{},lessons:{},words:{},goal:50,course:'n2'});
 let S=(()=>{try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&typeof r==='object')return Object.assign(defState(),r)}catch(e){}return defState()})();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const dk=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const todayXP=()=>S.days[dk(new Date())]||0;
 function streak(){const d=new Date();let n=0;if(!S.days[dk(d)])d.setDate(d.getDate()-1);while(S.days[dk(d)]){n++;d.setDate(d.getDate()-1)}return n}
-const learned=()=>Object.keys(S.words).filter(w=>WMAP[w]);
-const nextLesson=()=>LESSONS.find(l=>!S.lessons[l.id]?.done);
+if(!COURSES[S.course])S.course='n2';
+const CO=()=>COURSES[S.course];
+const CU=()=>UNITS.filter(u=>u.course===S.course);
+const CL=()=>LESSONS.filter(l=>l.unit.course===S.course);
+const lsub=l=>l.kana?`${l.words.length} 个假名`:`5 个单词 · ${l.g.p}`;
+const CW=()=>{const m={};CL().forEach(l=>l.words.forEach(w=>{if(!m[w.w])m[w.w]=w}));return m};
+const learned=()=>{const m=CW();return Object.keys(S.words).filter(w=>m[w]).map(w=>m[w])};
+const nextLesson=()=>CL().find(l=>!S.lessons[l.id]?.done);
+let coursePick=false;
 let tab='learn';
 try{const h=location.hash.slice(1);if(['learn','exam','review','grammar','me'].includes(h))tab=h}catch(e){}
 if(!S.exam)S.exam={};
@@ -868,9 +906,15 @@ function say(t,rate=.92){
 
 /* ---------- home views ---------- */
 function renderNav(){
-  const items=[['learn','学习',I.book],['exam','真题',I.exam],['review','复习',I.cards],['grammar','语法',I.gram],['me','我的',I.user]];
-  $('#nav').innerHTML=`<div class="logo"><div class="logo-mark">道</div><div><b>ことば道</b><small>JLPT N2</small></div></div>`+
+  const items=[['learn','学习',I.book],['exam',CO().exam,I.exam],['review','复习',I.cards],['grammar',CO().gram||'语法',I.gram],['me','我的',I.user]].filter(x=>x[1]);
+  $('#nav').innerHTML=`<div class="logo"><div class="logo-mark">道</div><div><b>ことば道</b><small>${CO().name}</small></div></div>`+
    items.map(([k,t,ic])=>`<button class="nav-btn ${k==='me'?'nav-me':''}" data-tab="${k}" ${tab===k?'aria-current="page"':''}>${ic}<span>${t}</span></button>`).join('');
+}
+function courseBar(){
+  const C=CO();
+  return `<div class="cbar"><button class="cpick" data-act="coursePick" aria-expanded="${coursePick}" aria-haspopup="true"><span class="cmark" style="--cc:var(${C.c})">${C.glyph}</span><span>${C.name}</span><span class="caret" aria-hidden="true">▼</span></button>
+   ${coursePick?`<div class="cmenu" role="menu">${Object.entries(COURSES).map(([k,c])=>{const ls=LESSONS.filter(l=>l.unit.course===k);
+     return `<button class="copt" role="menuitem" data-course="${k}" aria-current="${k===S.course}"><span class="cmark" style="--cc:var(${c.c})">${c.glyph}</span><span><b>${c.name}</b><span class="num">${c.desc} · ${ls.filter(l=>S.lessons[l.id]?.done).length}/${ls.length} 课</span></span></button>`}).join('')}</div>`:''}</div>`;
 }
 function statsHTML(full){
   const st=streak(),tx=todayXP(),g=S.goal,now=new Date();
@@ -888,7 +932,7 @@ function statsHTML(full){
   <div class="panel"><div class="stat-row">
     <div class="stat"><b class="num">${S.xp}</b><span>总 XP</span></div>
     <div class="stat"><b class="num">${learned().length}</b><span>已学单词</span></div>
-    <div class="stat"><b class="num">${LESSONS.filter(l=>S.lessons[l.id]?.done).length}/${LESSONS.length}</b><span>完成课程</span></div>
+    <div class="stat"><b class="num">${CL().filter(l=>S.lessons[l.id]?.done).length}/${CL().length}</b><span>完成课程</span></div>
   </div></div>
   ${full?`${installPanel()}<div class="panel"><div class="eyebrow" style="margin-bottom:8px">备份进度</div><p style="color:var(--muted);font-size:13px;margin-bottom:12px">进度保存在本机${persisted?'（已开启持久存储）':''}。导出一个备份文件，换设备或清理浏览器后可以导入恢复。</p>
     <div class="btn-row"><button class="btn btn-ghost" data-act="export">导出进度</button><button class="btn btn-ghost" data-act="import">导入进度</button></div></div>
@@ -897,15 +941,15 @@ function statsHTML(full){
 function renderLearn(){
   const nx=nextLesson();
   const hero=nx?`<section class="hero" data-glyph="${nx.unit.glyph}">
-      <div><div class="eyebrow">继续学习 · 第 ${nx.unit.ui+1} 单元</div><h2>${nx.title}</h2><p>第 ${nx.n} 课 · ${nx.zh} · 5 个单词 + ${nx.g.p}</p></div>
-      <button class="btn btn-white" data-start="${nx.id}">${S.lessons[LESSONS[0].id]?.done?'开始学习':'开始第一课'}</button></section>`
+      <div><div class="eyebrow">继续学习 · 第 ${nx.unit.ui+1} 单元</div><h2>${nx.title}</h2><p>第 ${nx.n} 课 · ${nx.zh} · ${lsub(nx)}</p></div>
+      <button class="btn btn-white" data-start="${nx.id}">${S.lessons[CL()[0].id]?.done?'开始学习':'开始第一课'}</button></section>`
     :`<section class="hero" data-glyph="完"><div><div class="eyebrow">全部完成</div><h2>全部课程已完成</h2><p>去复习巩固学过的 ${learned().length} 个单词吧。</p></div><button class="btn btn-white" data-act="startReview">开始复习</button></section>`;
   const strip=`<div class="strip stat-row panel">
     <div class="stat"><b class="num" style="color:var(--sun)">${streak()} 天</b><span>连续学习</span></div>
     <div class="stat"><b class="num">${todayXP()}/${S.goal}</b><span>今日 XP</span></div>
     <div class="stat"><b class="num">${learned().length}</b><span>已学单词</span></div></div>`;
-  const firstExam=UNITS.findIndex(u=>u.exam);
-  const units=UNITS.map((u,i)=>{
+  const CUS=CU(),CLS=CL(),firstExam=CUS.findIndex(u=>u.exam);
+  const units=CUS.map((u,i)=>{
     const dn=u.lessons.filter(l=>S.lessons[l.id]?.done).length;
     return `${i===firstExam?`<div class="part-h"><div class="eyebrow">第二部分</div><h2>真题高频</h2><p>单词和语法全部来自 2010–2020 年 N2 真题考点，按词性分组。</p></div>`:''}<section class="unit" style="--uc:var(${u.c})">
       <div class="unit-h"><div class="glyph" aria-hidden="true">${u.glyph}</div><div><p>第 ${u.ui+1} 单元${u.exam?' · <span class="xtag">真题</span>':''}</p><h3>${u.title}</h3><p>${u.zh}</p></div><span class="uprog num">${dn}/${u.lessons.length} 课</span></div>
@@ -913,19 +957,19 @@ function renderLearn(){
         const rec=S.lessons[l.id],done=rec?.done,isNext=nx&&nx.id===l.id;
         return `<button class="lrow ${done?'done':''} ${isNext?'next':''}" data-start="${l.id}">
           <span class="ri">${ring(done?1:0,46,4,'var(--uc)')}<span class="ic num">${done?I.check.replace('<svg','<svg width="18" height="18"'):l.n}</span></span>
-          <span class="lt"><b>${l.title}</b><span>${l.zh} · 5 个单词 · ${l.g.p}</span></span>
+          <span class="lt"><b>${l.title}</b><span>${l.zh} · ${lsub(l)}</span></span>
           ${done?`<span class="tag tag-done num">${rec.best}%</span>`:isNext?`<span class="tag tag-next">开始</span>`:`<span class="tag tag-new">未学</span>`}
         </button>`}).join('')}</div></section>`}).join('');
-  return `<div class="page-h"><div><h1>N2 课程</h1><p>${UNITS.length} 个单元 · ${LESSONS.length} 课 · ${WORDS.length} 个单词 · ${GRAMS.length} 个语法</p></div></div>${strip}${hero}${units}`;
+  return `<div class="page-h"><div><h1>${CO().name} 课程</h1><p>${CUS.length} 个单元 · ${CLS.length} 课 · ${Object.keys(CW()).length} 个${S.course==='kana'?'假名':'单词'}${CLS[0].kana?'':` · ${CLS.length} 个语法`}</p></div></div>${strip}${hero}${units}`;
 }
 function renderReview(){
-  const ws=learned().map(w=>WMAP[w]).sort((a,b)=>(S.words[a.w]||0)-(S.words[b.w]||0));
+  const ws=learned().sort((a,b)=>(S.words[a.w]||0)-(S.words[b.w]||0));
   if(!ws.length)return `<div class="page-h"><div><h1>单词复习</h1><p>按记忆强度安排复习</p></div></div>
-    <div class="panel empty"><b>还没有可以复习的单词</b>完成第一课后，学过的单词会出现在这里。<div style="margin-top:16px"><button class="btn btn-primary" data-start="${LESSONS[0].id}">开始第一课</button></div></div>`;
+    <div class="panel empty"><b>还没有可以复习的单词</b>完成第一课后，学过的单词会出现在这里。<div style="margin-top:16px"><button class="btn btn-primary" data-start="${CL()[0].id}">开始第一课</button></div></div>`;
   const weak=ws.filter(w=>(S.words[w.w]||0)<3).length;
   return `<div class="page-h"><div><h1>单词复习</h1><p>${ws.length} 个单词 · ${weak} 个需要加强</p></div><button class="btn btn-primary" data-act="startReview">开始复习（${Math.min(8,ws.length)} 题）</button></div>
    <div class="wlist">${ws.map(w=>{const s=S.words[w.w]||0;return `<div class="witem">
-     <div class="wt"><b>${w.w}</b><small>${w.r}</small><span>${w.m}</span></div>
+     <div class="wt"><b>${w.w}</b><small>${w.r===w.w?'':w.r}</small><span>${w.m}</span></div>
      <div class="str ${s<3?'weak':''}" aria-label="记忆强度 ${s}/4">${[0,1,2,3].map(i=>`<i class="${i<s?'on':''}"></i>`).join('')}</div>
      ${sayBtn(w.w)}</div>`}).join('')}</div>`;
 }
@@ -938,11 +982,17 @@ function gcardHTML(g,status){
      ${g.ex.map(e=>`<div class="gex">${sayBtn(e[0].replace('＿＿',g.k))}<div><p class="jp">${fillG(e[0],g.k)}</p><p class="zh">${e[1]}</p></div></div>`).join('')}
    </article>`;
 }
+function renderChart(){
+  return `<div class="page-h"><div><h1>五十音图</h1><p>点一下听发音 · 绿色边框是学过的假名</p></div></div>`+
+   CU().map(u=>`<section class="xsec"><h2 class="xh jp">${u.title}</h2>${u.lessons.map(l=>`<div class="kchart" style="margin-bottom:8px">${l.words.map(w=>
+     `<button class="kcell ${S.words[w.w]!=null?'on':''}" data-say="${w.w}" aria-label="${w.w} ${w.m}"><b>${w.w}</b><span>${w.m}</span></button>`).join('')}</div>`).join('')}</section>`).join('');
+}
 function renderGrammar(){
-  const extra=EXG.filter(g=>!g.inLesson);
-  return `<div class="page-h"><div><h1>N2 语法</h1><p>${GRAMS.length} 个课程句型 + ${extra.length} 个真题补充句型</p></div></div>`+
-   GRAMS.map(g=>{const d=S.lessons[g.lesson.id]?.done;return gcardHTML(g,`<span class="tag ${d?'tag-done':'tag-new'}">${d?'已学':'第 '+g.lesson.n+' 课'}</span>`)}).join('')+
-   `<div class="part-h"><div class="eyebrow">真题补充</div><h2>更多考过的语法</h2><p>这些句型出现在真题的语法题里，可以在「真题 → 文法形式」中练习。</p></div>`+
+  if(S.course==='kana')return renderChart();
+  const n2=S.course==='n2',grams=CL().map(l=>l.g),extra=n2?EXG.filter(g=>!g.inLesson):[];
+  return `<div class="page-h"><div><h1>${CO().name} 语法</h1><p>${grams.length} 个课程句型${n2?` + ${extra.length} 个真题补充句型`:''}</p></div></div>`+
+   grams.map(g=>{const d=S.lessons[g.lesson.id]?.done;return gcardHTML(g,`<span class="tag ${d?'tag-done':'tag-new'}">${d?'已学':'第 '+g.lesson.n+' 课'}</span>`)}).join('')+
+   (n2?`<div class="part-h"><div class="eyebrow">真题补充</div><h2>更多考过的语法</h2><p>这些句型出现在真题的语法题里，可以在「真题 → 文法形式」中练习。</p></div>`:'')+
    extra.map(g=>gcardHTML(g,'')).join('');
 }
 function bestOf(key){const r=S.exam[key];return r?`<span class="tag tag-done num">最佳 ${r.best}%</span>`:`<span class="tag tag-new">未练习</span>`}
@@ -965,7 +1015,16 @@ function typeItems(t,n=10){
   if(t==='K')return pool.map(k=>({t:'xk',x:k,y:k.ys[0]}));
   return pool.map(e=>{const ts=e.tags.filter(x=>x.t===t);return {t:'x'+t.toLowerCase(),x:e,y:ts[Math.random()*ts.length|0].y}});
 }
+function renderKari(){
+  if(!KARI.length)return `<div class="page-h"><div><h1>仮免 学科</h1></div></div><div class="panel empty"><b>还没有仮免错题</b></div>`;
+  return `<div class="page-h"><div><h1>仮免 学科 · 错题</h1><p>${KARI.length} 次効果測定 · ${kariItems('all').length} 道判断题</p></div></div>
+  <p class="note">仮免前効果測定里做错的题，全部是判断题：判断题干说法是否正确（○ / ×）。</p><div class="ylist">
+   ${KARI.map(k=>`<button class="yrow" data-exam="k${k.id}"><span class="ylabel"><b class="jp">${k.title}</b><span class="num">${k.qs.length} 题</span></span>${bestOf('k'+k.id)}</button>`).join('')}
+   <button class="yrow" data-exam="kall"><span class="ylabel"><b>全部错题（打乱顺序）</b><span class="num">${kariItems('all').length} 题</span></span>${bestOf('kall')}</button>
+  </div>`;
+}
 function renderExam(){
+  if(S.course==='life')return renderKari();
   const total=EXL.length+EXK.length;
   return `<div class="page-h"><div><h1>真题考点</h1><p>${EXAM_YEARS.length} 次 N2 真题（2010–2020）· ${total} 个词汇考点 · ${POOL.G.length} 个语法考点</p></div></div>
   <p class="note">考点（被考到的单词、语法和年份）整理自历年真题；题目里的例句和选项均为本站重新编写，不是真题原题。</p>
@@ -977,22 +1036,29 @@ function renderExam(){
   </div></section>
   <section class="xsec"><h2 class="xh">按考试回顾</h2><p class="note">把某一次考试的全部考点做成一套练习，题量与真题的文字・词汇・语法部分相近。</p><div class="ylist">
    ${EXAM_YEARS.slice().reverse().map(y=>`<button class="yrow" data-exam="y${y}"><span class="ylabel"><b>${YF(y)}</b><span class="num">${yearItems(y).length} 题</span></span>${bestOf('y'+y)}</button>`).join('')}
-  </div></section>
-  ${KARI.length?`<section class="xsec"><h2 class="xh">仮免 学科 · 错题</h2><p class="note">仮免前効果測定里做错的题，全部是判断题：判断题干说法是否正确（○ / ×）。</p><div class="ylist">
-   ${KARI.map(k=>`<button class="yrow" data-exam="k${k.id}"><span class="ylabel"><b class="jp">${k.title}</b><span class="num">${k.qs.length} 题</span></span>${bestOf('k'+k.id)}</button>`).join('')}
-   <button class="yrow" data-exam="kall"><span class="ylabel"><b>全部错题（打乱顺序）</b><span class="num">${kariItems('all').length} 题</span></span>${bestOf('kall')}</button>
-  </div></section>`:''}`;
+  </div></section>`;
 }
-function renderMe(){return `<div class="page-h"><div><h1>我的学习</h1><p>JLPT N2 · 每日目标 ${S.goal} XP</p></div></div>${statsHTML(true)}`}
+function renderMe(){return `<div class="page-h"><div><h1>我的学习</h1><p>${CO().name} · 每日目标 ${S.goal} XP</p></div></div>${statsHTML(true)}`}
 function render(){
+  if(tab==='exam'&&!CO().exam)tab='learn';
   renderNav();
-  $('#main').innerHTML=tab==='learn'?renderLearn():tab==='exam'?renderExam():tab==='review'?renderReview():tab==='grammar'?renderGrammar():renderMe();
+  $('#main').innerHTML=courseBar()+(tab==='learn'?renderLearn():tab==='exam'?renderExam():tab==='review'?renderReview():tab==='grammar'?renderGrammar():renderMe());
   $('#aside').innerHTML=statsHTML(false);
 }
 
 /* ---------- lesson engine ---------- */
 let L=null;
+/* 五十音课：假名卡 → 认读 → 找假名 → 听音 → 配对 */
+function buildKana(l){
+  const w=l.words,q=[];
+  w.forEach((x,i)=>{q.push({t:'card',w:x});if(i%2)q.push({t:'mc',w:w[i-1]},{t:'rmc',w:x})});
+  if(w.length%2)q.push({t:'mc',w:w[w.length-1]});
+  shuffle(w).slice(0,3).forEach(x=>q.push({t:'listen',w:x}));
+  q.push({t:'match',ws:w.slice(0,6)});
+  return q;
+}
 function buildLesson(l){
+  if(l.kana)return buildKana(l);
   const w=l.words,g=l.g;
   const vg=shuffle(w.filter(x=>x.ex.includes(x.w)))[0];
   const q=[{t:'card',w:w[0]},{t:'card',w:w[1]},{t:'mc',w:w[0]},{t:'card',w:w[2]},{t:'listen',w:w[1]},{t:'card',w:w[3]},
@@ -1002,16 +1068,17 @@ function buildLesson(l){
   return q;
 }
 function buildReview(){
-  const ws=shuffle(learned().map(w=>WMAP[w])).sort((a,b)=>(S.words[a.w]||0)-(S.words[b.w]||0)).slice(0,8);
-  return shuffle(ws).map(w=>({t:['mc','rmc','listen','reading'][Math.random()*4|0],w}));
+  const ws=shuffle(learned()).sort((a,b)=>(S.words[a.w]||0)-(S.words[b.w]||0)).slice(0,8);
+  return shuffle(ws).map(w=>({t:['mc','rmc','listen','reading'][Math.random()*(w.lesson.kana?3:4)|0],w}));
 }
+const poolOf=w=>{const l=w.lesson;return l.kana?l.unit.lessons.flatMap(x=>x.words):LESSONS.filter(x=>x.unit.course===l.unit.course).flatMap(x=>x.words)};
 function prep(b){
-  const s={...b,sel:null,done:false};
-  if(b.t==='mc'){s.ans=b.w.m;s.opts=opts(s.ans,WORDS.map(x=>x.m))}
-  if(b.t==='rmc'){s.ans=b.w.w;s.opts=opts(s.ans,WORDS.map(x=>x.w))}
-  if(b.t==='listen'){s.ans=b.w.w;s.opts=opts(s.ans,[...b.w.lesson.words,...WORDS].map(x=>x.w).slice(0,9).concat(shuffle(WORDS).slice(0,3).map(x=>x.w)))}
-  if(b.t==='reading'){s.ans=b.w.r;s.opts=opts(s.ans,WORDS.map(x=>x.r))}
-  if(b.t==='gap'){s.ans=b.g.k;s.opts=opts(s.ans,ALLK)}
+  const s={...b,sel:null,done:false},P=b.w&&poolOf(b.w);
+  if(b.t==='mc'){s.ans=b.w.m;s.opts=opts(s.ans,P.map(x=>x.m))}
+  if(b.t==='rmc'){s.ans=b.w.w;s.opts=opts(s.ans,P.map(x=>x.w))}
+  if(b.t==='listen'){s.ans=b.w.w;s.opts=opts(s.ans,[...b.w.lesson.words,...P].map(x=>x.w).slice(0,9).concat(shuffle(P).slice(0,3).map(x=>x.w)))}
+  if(b.t==='reading'){s.ans=b.w.r;s.opts=opts(s.ans,P.map(x=>x.r))}
+  if(b.t==='gap'){const ks=[...new Set(CL().map(l=>l.g).filter(Boolean).map(g=>g.k))];s.ans=b.g.k;s.opts=opts(s.ans,b.y||ks.length<4?ALLK:ks)}
   const x=b.x;
   if(b.t==='xr'){s.ans=x.r;s.opts=shuffle([x.r,...readingTraps(x.w,x.r)])}
   if(b.t==='xh'){s.ans=x.w;s.opts=shuffle([x.w,...x.hk])}
@@ -1097,7 +1164,7 @@ const SIGNS={bike:`<svg viewBox="0 0 120 108" role="img" aria-label="横断歩�
   <path d="M27 27L93 93" stroke="#c8102e" stroke-width="10"/></svg>`};
 const xline=s=>`<div class="eyebrow">${TYPES[s.t==='gap'?'G':s.t[1].toUpperCase()][0]}${s.y?` · ${YF(s.y)}真题考点`:''}</div>`;
 function exHTML(s){
-  const w=s.w,x=s.x;
+  const w=s.w,x=s.x,kn=w&&w.lesson.kana;
   switch(s.t){
    case 'xr':return `<div class="ex">${xline(s)}<p class="q">「<span class="jp">${x.w}</span>」怎么读？</p>${optList(s,true)}</div>`;
    case 'xh':return `<div class="ex">${xline(s)}<p class="q">「<span class="jp">${x.r}</span>」写成汉字是哪个？</p>${optList(s,true)}</div>`;
@@ -1108,13 +1175,15 @@ function exHTML(s){
    case 'xu':return `<div class="ex">${xline(s)}<p class="q">「<span class="jp">${x.w}</span>」用法正确的句子是？</p>${optList(s,true,o=>o.replace(x.w,`<u>${x.w}</u>`),'long')}</div>`;
    case 'tf':return `<div class="ex"><div class="eyebrow">${s.set} · 第 ${s.no} 問 · 判断题</div><p class="q">这句话说得对吗？</p>
      ${s.img?`<div class="sign">${SIGNS[s.img]}</div>`:''}<p class="sent">${s.q}</p>${optList(s,true,o=>TF[o])}</div>`;
-   case 'card':return `<div class="ex"><div class="eyebrow">新单词</div><div class="wcard">
+   case 'card':return `<div class="ex"><div class="eyebrow">${kn?'新假名':'新单词'}</div><div class="wcard">
      ${sayBtn(w.w)}<div class="word"><ruby>${w.w}<rt>${w.r===w.w?'':w.r}</rt></ruby></div><div class="mean">${w.m}</div>${examChip(w.w)}
      <div class="exs">${sayBtn(w.ex,'say','播放例句')}<div><p class="jp">${hl(w.ex,w.w)}</p><p class="zh">${w.exz}</p></div></div></div></div>`;
-   case 'mc':return `<div class="ex"><div class="eyebrow">选择意思</div><p class="q">「<span class="jp">${w.w}</span>」是什么意思？</p>${optList(s)}</div>`;
-   case 'rmc':return `<div class="ex"><div class="eyebrow">选择单词</div><p class="q">哪个词表示「${w.m}」？</p>${optList(s,true)}</div>`;
+   case 'mc':return kn?`<div class="ex"><div class="eyebrow">认读</div><p class="q">「<span class="jp">${w.w}</span>」怎么读？</p>${optList(s)}</div>`
+     :`<div class="ex"><div class="eyebrow">选择意思</div><p class="q">「<span class="jp">${w.w}</span>」是什么意思？</p>${optList(s)}</div>`;
+   case 'rmc':return kn?`<div class="ex"><div class="eyebrow">找假名</div><p class="q">哪个假名读作「${w.m}」？</p>${optList(s,true)}</div>`
+     :`<div class="ex"><div class="eyebrow">选择单词</div><p class="q">哪个词表示「${w.m}」？</p>${optList(s,true)}</div>`;
    case 'reading':return `<div class="ex"><div class="eyebrow">选择读音</div><p class="q">「<span class="jp">${w.w}</span>」怎么读？</p>${optList(s,true)}</div>`;
-   case 'listen':return `<div class="ex"><div class="eyebrow">听力</div><p class="q">听录音，选出你听到的单词</p>
+   case 'listen':return `<div class="ex"><div class="eyebrow">听力</div><p class="q">听录音，选出你听到的${kn?'假名':'单词'}</p>
      <div class="say-row"><button class="say-xl" data-say="${w.w}" aria-label="播放">${I.sound}</button><button class="say-slow" data-say="${w.w}" data-rate=".6" aria-label="慢速播放">慢速</button></div>${optList(s,true)}</div>`;
    case 'tip':{const g=s.g;return `<div class="ex"><div class="eyebrow">语法要点</div><div class="tip">
      <h2>${g.p}</h2><p class="m">${g.m}</p><div class="form"><span>接续</span><span class="jp">${g.f}</span></div>
@@ -1129,8 +1198,8 @@ function exHTML(s){
    case 'match':{
      /* one grid, left/right interleaved per row, so every box in a row (and every row) has the same height */
      const lb=(x,i)=>`<button class="mt jp ${s.ok.includes(x.w)?'ok':''} ${s.pl===i?'sel':''}" data-ml="${i}" ${s.ok.includes(x.w)?'disabled':''}>${x.w}</button>`;
-     const rb=(m,i)=>{const ok=s.ok.some(w=>WMAP[w].m===m);return `<button class="mt ${ok?'ok':''} ${s.pr===i?'sel':''}" data-mr="${i}" ${ok?'disabled':''}>${m}</button>`};
-     return `<div class="ex"><div class="eyebrow">配对</div><p class="q">把单词和意思连起来</p><div class="match">
+     const rb=(m,i)=>{const ok=s.ok.some(w=>s.left.find(x=>x.w===w).m===m);return `<button class="mt ${ok?'ok':''} ${s.pr===i?'sel':''}" data-mr="${i}" ${ok?'disabled':''}>${m}</button>`};
+     return `<div class="ex"><div class="eyebrow">配对</div><p class="q">${s.ws[0].lesson.kana?'把假名和读音连起来':'把单词和意思连起来'}</p><div class="match">
      ${s.left.map((x,i)=>lb(x,i)+rb(s.right[i],i)).join('')}</div></div>`}
   }
 }
@@ -1165,7 +1234,7 @@ function detailFor(s){
   if(s.t==='gap')return `${s.e[0].replace('＿＿',s.ans)}<br><span style="font-family:var(--f-ui);color:var(--muted)">${s.e[1]}</span>`;
   if(s.t==='vgap')return `${w.ex}<br><span style="font-family:var(--f-ui);color:var(--muted)">${w.exz}</span>`;
   if(s.t==='order')return `${s.g.order[1].join('')}`;
-  return `${w.w}（${w.r}）＝ ${w.m}`;
+  return w.r===w.w?`${w.w} ＝ ${w.m}`:`${w.w}（${w.r}）＝ ${w.m}`;
 }
 function grade(ok){
   const s=L.cur;s.done=true;
@@ -1189,14 +1258,14 @@ function check(){const s=L.cur;if(s.done||!canCheck(s))return;
 function next(){if(L.finished)return;L.idx++;showEx()}
 /* completion page: back, or go straight on (the lesson right after this one, not the first unfinished) */
 function doneChoices(){
-  const back=L.mode==='exam'?'返回真题':L.mode==='review'?'返回复习':'返回课程';
+  const back=L.mode==='exam'?'返回'+CO().exam:L.mode==='review'?'返回复习':'返回课程';
   let nextCard='',nextBtn='';
   if(L.mode==='lesson'){
-    const nx=LESSONS[LESSONS.indexOf(L.lesson)+1];
+    const cl=CL(),nx=cl[cl.indexOf(L.lesson)+1];
     if(nx){
       const rec=S.lessons[nx.id];
       nextCard=`<div class="nextcard" style="--uc:var(${nx.unit.c})"><div class="glyph" aria-hidden="true">${nx.unit.glyph}</div>
-        <div class="lt"><span class="eyebrow">下一课 · 第 ${nx.n} 课${rec?.done?' · 已学过':''}</span><b class="jp">${nx.title}</b><span>${nx.zh} · ${nx.g.p}</span></div></div>`;
+        <div class="lt"><span class="eyebrow">下一课 · 第 ${nx.n} 课${rec?.done?' · 已学过':''}</span><b class="jp">${nx.title}</b><span>${nx.zh} · ${lsub(nx)}</span></div></div>`;
       nextBtn=`<button class="btn btn-primary" data-start="${nx.id}">下一课</button>`;
     }else nextCard=`<p class="note">这是最后一课，全部课程都走完了。</p>`;
   }
@@ -1217,7 +1286,7 @@ function finish(){
   $('#lx-bar').style.width='100%';$('#lx-count').textContent='';
   $('#lx-body').innerHTML=`<div class="ex done-screen"><div class="badge">${I.check}</div>
     <h2>${L.mode==='lesson'?'第 '+L.lesson.n+' 课完成！':L.mode==='exam'?'练习完成！':'复习完成！'}</h2>
-    <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.g.p}`:L.mode==='exam'?L.exam.title:'记忆强度已更新'}</p>
+    <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.kana?L.lesson.words.map(w=>w.w).join(' '):L.lesson.g.p}`:L.mode==='exam'?L.exam.title:'记忆强度已更新'}</p>
     <div class="tiles"><div><b class="num" style="color:var(--sun)">+${gained}</b><span>XP</span></div><div><b class="num" style="color:var(--good)">${acc}%</b><span>正确率</span></div><div><b class="num" style="color:var(--brand)">${L.mode==='lesson'?newW:L.graded}</b><span>${L.mode==='lesson'?'新单词':'作答次数'}</span></div></div>
     <p style="color:var(--muted);font-size:13px" class="num">连续学习 ${streak()} 天 · 今日 ${todayXP()}/${S.goal} XP</p>
     ${doneChoices()}</div>`;
@@ -1227,6 +1296,7 @@ function finish(){
 
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{
+  if(coursePick&&!e.target.closest('.cbar')){coursePick=false;render()}
   const t=e.target.closest('button');if(!t)return;
   if(t.dataset.say){say(t.dataset.say,t.dataset.rate?+t.dataset.rate:.92);return}
   if(t.dataset.tab){tab=t.dataset.tab;try{history.replaceState(null,'','#'+tab)}catch(err){}render();window.scrollTo(0,0);return}
@@ -1239,6 +1309,8 @@ document.addEventListener('click',e=>{
       :{key,title:`${TYPES[key][0]} · ${TYPES[key][1]}`,queue:typeItems(key)};
     startSession('exam',null,exam);return}
   const act=t.dataset.act;
+  if(act==='coursePick'){coursePick=!coursePick;render();return}
+  if(t.dataset.course){coursePick=false;if(S.course!==t.dataset.course){S.course=t.dataset.course;save();window.scrollTo(0,0);toast('已切换到 '+CO().name)}render();return}
   if(act==='startReview'){startSession('review');return}
   if(act==='reset'){$('#reset-box').innerHTML=`<p style="font-weight:800;margin-bottom:10px">确定要清空所有进度吗？此操作无法撤销。</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-bad" data-act="resetYes">清空进度</button><button class="btn btn-ghost" data-act="resetNo">取消</button></div>`;return}
   if(act==='resetYes'){S=defState();save();render();toast('进度已清空');return}
