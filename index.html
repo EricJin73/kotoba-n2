@@ -356,6 +356,7 @@ body{margin:0}
 
 <script src="exam-data.js"></script>
 <script src="basic-data.js"></script>
+<script src="year-data.js"></script>
 <script>
 /* ---------- content: JLPT N2 ---------- */
 const UNITS=[
@@ -762,14 +763,14 @@ const EXK=(window.EXAM_K||'').trim().split('\n').filter(Boolean).map(line=>{cons
 const KMAP=Object.fromEntries(EXK.map(k=>[k.w,k]));
 const EXG=(window.EXAM_G||[]).map(g=>({...g,ys:g.y.split(' ')}));
 const GMAP=Object.fromEntries(EXG.map(g=>[g.id,g]));
-const BASE_Y={'わけにはいかない':'13.7 18.7','に応じて':'10.7','ものの':'15.7','おそれがある':'17.7','たびに':'13.7'};
+const BASE_Y={'わけにはいかない':'13.7 18.7 25.7','に応じて':'10.7','ものの':'15.7 23.7','おそれがある':'17.7','たびに':'13.7','につれて':'23.7','からには':'25.12','に限り':'25.12','にあたって':'25.7'};
 UNITS.forEach(u=>u.lessons.forEach(l=>{if(BASE_Y[l.g.k])l.g.ys=BASE_Y[l.g.k].split(' ')}));
 (window.EXAM_UNITS||[]).forEach(u=>UNITS.push({glyph:u.glyph,title:u.title,zh:u.zh,c:u.c,exam:true,lessons:u.lessons.map(l=>{
   const g=GMAP[l.g];g.inLesson=true;
   return {title:l.title,zh:l.zh,words:l.w.split(' ').map(w=>{const e=EXV[w]||KMAP[w];return [w,e.r,e.m,e.ex,e.exz]}),
     g:{p:g.p,k:g.k,m:g.m,f:g.f,ex:g.ex,order:g.order,ys:g.ys}}})}));
 
-(window.BASIC_UNITS||[]).forEach(u=>UNITS.push({...u,late:true,lessons:u.lessons.map(l=>l.k?{title:l.title,zh:l.zh,kana:true,
+[...(window.BASIC_UNITS||[]),...(window.YEAR_UNITS||[])].forEach(u=>UNITS.push({...u,late:true,lessons:u.lessons.map(l=>l.k?{title:l.title,zh:l.zh,kana:true,
   words:l.k.split(';').map(x=>{const [w,m,ex,exz]=x.split('|');return [w,w,m,ex,exz]})}:l)}));
 
 let lid=0;
@@ -948,10 +949,10 @@ function renderLearn(){
     <div class="stat"><b class="num" style="color:var(--sun)">${streak()} 天</b><span>连续学习</span></div>
     <div class="stat"><b class="num">${todayXP()}/${S.goal}</b><span>今日 XP</span></div>
     <div class="stat"><b class="num">${learned().length}</b><span>已学单词</span></div></div>`;
-  const CUS=CU(),CLS=CL(),firstExam=CUS.findIndex(u=>u.exam);
+  const CUS=CU(),CLS=CL(),firstExam=CUS.findIndex(u=>u.exam),firstYear=CUS.findIndex(u=>u.year);
   const units=CUS.map((u,i)=>{
     const dn=u.lessons.filter(l=>S.lessons[l.id]?.done).length;
-    return `${i===firstExam?`<div class="part-h"><div class="eyebrow">第二部分</div><h2>真题高频</h2><p>单词和语法全部来自 2010–2020 年 N2 真题考点，按词性分组。</p></div>`:''}<section class="unit" style="--uc:var(${u.c})">
+    return `${i===firstYear?`<div class="part-h"><div class="eyebrow">第三部分</div><h2>2023–2025 真题</h2><p>每年一个单元，单词和语法来自当年 7 月和 12 月的 N2 真题考点。</p></div>`:''}${i===firstExam?`<div class="part-h"><div class="eyebrow">第二部分</div><h2>真题高频</h2><p>单词和语法全部来自 2010–2020 年 N2 真题考点，按词性分组。</p></div>`:''}<section class="unit" style="--uc:var(${u.c})">
       <div class="unit-h"><div class="glyph" aria-hidden="true">${u.glyph}</div><div><p>第 ${u.ui+1} 单元${u.exam?' · <span class="xtag">真题</span>':''}</p><h3>${u.title}</h3><p>${u.zh}</p></div><span class="uprog num">${dn}/${u.lessons.length} 课</span></div>
       <div class="lessons">${u.lessons.map(l=>{
         const rec=S.lessons[l.id],done=rec?.done,isNext=nx&&nx.id===l.id;
@@ -1026,7 +1027,7 @@ function renderKari(){
 function renderExam(){
   if(S.course==='life')return renderKari();
   const total=EXL.length+EXK.length;
-  return `<div class="page-h"><div><h1>真题考点</h1><p>${EXAM_YEARS.length} 次 N2 真题（2010–2020）· ${total} 个词汇考点 · ${POOL.G.length} 个语法考点</p></div></div>
+  return `<div class="page-h"><div><h1>真题考点</h1><p>${EXAM_YEARS.length} 次 N2 真题（2010–2025）· ${total} 个词汇考点 · ${POOL.G.length} 个语法考点</p></div></div>
   <p class="note">考点（被考到的单词、语法和年份）整理自历年真题；题目里的例句和选项均为本站重新编写，不是真题原题。</p>
   <section class="xsec"><h2 class="xh">按题型练习</h2><div class="tgrid">
    ${Object.keys(TYPES).map(t=>`<div class="tcard">
