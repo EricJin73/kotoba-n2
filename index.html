@@ -317,6 +317,17 @@ mark{background:color-mix(in srgb,var(--brand) 18%,transparent);color:inherit;bo
 .yrow:hover{background:var(--sunk)}
 .ylabel{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
 .ylabel span{color:var(--muted);font-size:13px;font-weight:700}
+.mbook{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.mbook-h{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mbook-h b{font-size:18px;font-weight:900;display:block}
+.mbook-h span{color:var(--muted);font-size:13px;font-weight:700}
+.mbook details summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:800}
+.mbook .ylist{margin-top:10px}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0}
+.mrow .ylabel b{font-size:16px}
+.mdel{color:var(--muted);font-size:12px;font-weight:800;padding:6px 10px;border-radius:8px;flex:none}
+.mdel:hover{background:var(--sunk);color:var(--bad)}
 .opt.long{font-size:15px;font-weight:500;align-items:flex-start;line-height:1.7}
 .opt.long .k{margin-top:2px}
 .opt u{text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:var(--brand)}
@@ -866,7 +877,7 @@ const I={
 
 /* ---------- state ---------- */
 const KEY='kotoba-n2-v1';
-const defState=()=>({xp:0,days:{},lessons:{},words:{},goal:50,course:'n2'});
+const defState=()=>({xp:0,days:{},lessons:{},words:{},goal:50,course:'n2',mistakes:{}});
 let S=(()=>{try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&typeof r==='object')return Object.assign(defState(),r)}catch(e){}return defState()})();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const dk=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -884,6 +895,7 @@ let coursePick=false;
 let tab='learn';
 try{const h=location.hash.slice(1);if(['learn','exam','review','grammar','me'].includes(h))tab=h}catch(e){}
 if(!S.exam)S.exam={};
+if(!S.mistakes)S.mistakes={};
 
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -1016,6 +1028,29 @@ function typeItems(t,n=10){
   if(t==='K')return pool.map(k=>({t:'xk',x:k,y:k.ys[0]}));
   return pool.map(e=>{const ts=e.tags.filter(x=>x.t===t);return {t:'x'+t.toLowerCase(),x:e,y:ts[Math.random()*ts.length|0].y}});
 }
+/* 错题本：真题练习里答错的题自动收进来（存 S.mistakes），在错题本练习时一次答对就移出 */
+const mkey=it=>it.t+'|'+(it.t==='gap'?(it.g.id||it.g.k):it.x.w)+'|'+(it.y||'');
+const mtype=t=>TYPES[t==='gap'?'G':t[1].toUpperCase()][0];
+function mitem(k){
+  const [t,id,y]=k.split('|');
+  if(t==='gap'){const g=POOL.G.find(g=>(g.id||g.k)===id);return g&&{t,g,e:g.ex[Math.random()*g.ex.length|0],y}}
+  if(t==='xk'){const x=KMAP[id];return x&&{t,x,y}}
+  const T=t[1]&&t[1].toUpperCase(),x=EXV[id];return x&&POOL[T]&&POOL[T].includes(x)?{t,x,y}:null;
+}
+const mistKeys=()=>Object.keys(S.mistakes).filter(k=>mitem(k)).sort((a,b)=>S.mistakes[b].at-S.mistakes[a].at);
+const mistItems=()=>shuffle(mistKeys()).slice(0,20).map(mitem);
+function renderMistakes(){
+  const ks=mistKeys();
+  if(!ks.length)return `<section class="mbook"><div class="mbook-h"><div><b>错题本</b><span>还没有错题</span></div></div>
+    <p class="note">在真题练习里答错（或跳过）的题会自动加入这里。</p></section>`;
+  return `<section class="mbook"><div class="mbook-h"><div><b>错题本</b><span class="num">${ks.length} 道错题</span></div>
+    <button class="btn btn-primary btn-sm" data-exam="mist">练习错题${ks.length>20?' 20 题':''}</button></div>
+    <p class="note">真题练习里答错的题会自动加入；在这里练习时一次就答对，就会移出错题本。</p>
+    <details><summary>查看全部 ${ks.length} 题</summary><div class="ylist">
+    ${ks.map(k=>{const it=mitem(k),m=S.mistakes[k];return `<div class="mrow"><span class="ylabel"><b class="jp">${it.t==='gap'?it.g.p:it.x.w}</b><span>${mtype(it.t)}${it.y?' · '+YF(it.y):''} · 错 ${m.n} 次</span></span>
+      <button class="mdel" data-unmist="${k}" aria-label="移出错题本">移出</button></div>`}).join('')}
+    </div></details></section>`;
+}
 function renderKari(){
   if(!KARI.length)return `<div class="page-h"><div><h1>仮免 学科</h1></div></div><div class="panel empty"><b>还没有仮免错题</b></div>`;
   return `<div class="page-h"><div><h1>仮免 学科 · 错题</h1><p>${KARI.length} 次効果測定 · ${kariItems('all').length} 道判断题</p></div></div>
@@ -1029,6 +1064,7 @@ function renderExam(){
   const total=EXL.length+EXK.length;
   return `<div class="page-h"><div><h1>真题考点</h1><p>${EXAM_YEARS.length} 次 N2 真题（2010–2025）· ${total} 个词汇考点 · ${POOL.G.length} 个语法考点</p></div></div>
   <p class="note">考点（被考到的单词、语法和年份）整理自历年真题；题目里的例句和选项均为本站重新编写，不是真题原题。</p>
+  ${renderMistakes()}
   <section class="xsec"><h2 class="xh">按题型练习</h2><div class="tgrid">
    ${Object.keys(TYPES).map(t=>`<div class="tcard">
      <div class="tcard-h"><b class="jp">${TYPES[t][0]}</b><span>${TYPES[t][1]}</span></div>
@@ -1096,7 +1132,7 @@ function prep(b){
 function startSession(mode,lesson,exam){
   const q=mode==='lesson'?buildLesson(lesson):mode==='exam'?exam.queue:buildReview();
   if(!q.length){toast('先完成一课再来复习');return}
-  L={mode,lesson,exam,queue:q,idx:0,xp:0,right:0,graded:0,wrongOnce:new Set(),
+  L={mode,lesson,exam,queue:q,idx:0,xp:0,right:0,graded:0,cleared:0,wrongOnce:new Set(),
     newWords:mode==='lesson'?lesson.words.filter(w=>S.words[w.w]==null).length:0};
   $('#lx').hidden=false;document.body.style.overflow='hidden';
   showEx();
@@ -1243,6 +1279,9 @@ function grade(ok){
   L.graded++;
   if(ok){L.right++;L.xp+=10;if(s.w)S.words[s.w.w]=Math.min(4,(S.words[s.w.w]||0)+1)}
   else{L.queue.push(L.queue[L.idx]);if(s.w&&S.words[s.w.w]!=null)S.words[s.w.w]=Math.max(0,S.words[s.w.w]-1)}
+  if(L.mode==='exam'&&s.t!=='tf'){const it=L.queue[L.idx],k=mkey(it);
+    if(!ok){it.miss=true;const m=S.mistakes[k];S.mistakes[k]={n:(m?.n||0)+1,at:Date.now()};save()}
+    else if(L.exam.key==='mist'&&!it.miss&&S.mistakes[k]){delete S.mistakes[k];L.cleared++;save()}}
   document.querySelectorAll('#lx-body button').forEach(b=>{if(!b.dataset.say)b.disabled=true});
   if(s.opts){document.querySelectorAll('#lx-body .opt').forEach(b=>{const v=s.opts[+b.dataset.opt];if(v===s.ans)b.classList.add('right');else if(v===s.sel)b.classList.add('wrong')})}
   if(s.t==='gap'||s.t==='vgap'||s.t==='xc'||s.t==='xk'){const bl=$('#blank');bl.textContent=s.ans;bl.classList.remove('empty-b');bl.style.color=ok?'var(--good)':'var(--bad)';
@@ -1271,6 +1310,7 @@ function doneChoices(){
     }else nextCard=`<p class="note">这是最后一课，全部课程都走完了。</p>`;
   }
   if(L.mode==='exam'&&L.exam.key.length===1)nextBtn=`<button class="btn btn-primary" data-exam="${L.exam.key}">再练 10 题</button>`;
+  if(L.mode==='exam'&&L.exam.key==='mist'&&mistKeys().length)nextBtn=`<button class="btn btn-primary" data-exam="mist">再练错题</button>`;
   if(L.mode==='review')nextBtn=`<button class="btn btn-primary" data-act="startReview">再复习一组</button>`;
   return `${nextCard}<div class="choices"><button class="btn btn-ghost" data-act="close">${back}</button>${nextBtn}</div>`;
 }
@@ -1282,12 +1322,12 @@ function finish(){
     S.lessons[L.lesson.id]={done:true,best:Math.max(prev?.best||0,acc)};
     L.lesson.words.forEach(w=>{if(!(S.words[w.w]>=1))S.words[w.w]=1});
   }
-  if(L.mode==='exam'){const r=S.exam[L.exam.key];S.exam[L.exam.key]={best:Math.max(r?.best||0,acc),n:(r?.n||0)+1}}
+  if(L.mode==='exam'&&L.exam.key!=='mist'){const r=S.exam[L.exam.key];S.exam[L.exam.key]={best:Math.max(r?.best||0,acc),n:(r?.n||0)+1}}
   const gained=L.xp+bonus;S.xp+=gained;const k=dk(new Date());S.days[k]=(S.days[k]||0)+gained;save();
   $('#lx-bar').style.width='100%';$('#lx-count').textContent='';
   $('#lx-body').innerHTML=`<div class="ex done-screen"><div class="badge">${I.check}</div>
     <h2>${L.mode==='lesson'?'第 '+L.lesson.n+' 课完成！':L.mode==='exam'?'练习完成！':'复习完成！'}</h2>
-    <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.kana?L.lesson.words.map(w=>w.w).join(' '):L.lesson.g.p}`:L.mode==='exam'?L.exam.title:'记忆强度已更新'}</p>
+    <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.kana?L.lesson.words.map(w=>w.w).join(' '):L.lesson.g.p}`:L.mode==='exam'?(L.exam.key==='mist'?`错题本 · 移出 ${L.cleared} 题 · 还剩 ${mistKeys().length} 题`:L.exam.title):'记忆强度已更新'}</p>
     <div class="tiles"><div><b class="num" style="color:var(--sun)">+${gained}</b><span>XP</span></div><div><b class="num" style="color:var(--good)">${acc}%</b><span>正确率</span></div><div><b class="num" style="color:var(--brand)">${L.mode==='lesson'?newW:L.graded}</b><span>${L.mode==='lesson'?'新单词':'作答次数'}</span></div></div>
     <p style="color:var(--muted);font-size:13px" class="num">连续学习 ${streak()} 天 · 今日 ${todayXP()}/${S.goal} XP</p>
     ${doneChoices()}</div>`;
@@ -1303,9 +1343,11 @@ document.addEventListener('click',e=>{
   if(t.dataset.tab){tab=t.dataset.tab;try{history.replaceState(null,'','#'+tab)}catch(err){}render();window.scrollTo(0,0);return}
   if(t.dataset.goal){S.goal=+t.dataset.goal;save();render();return}
   if(t.dataset.start){const l=LESSONS.find(x=>x.id===t.dataset.start);if(L)L=null;startSession('lesson',l);return}
+  if(t.dataset.unmist){delete S.mistakes[t.dataset.unmist];save();render();toast('已移出错题本');return}
   if(t.dataset.exam){const key=t.dataset.exam;if(L)L=null;
     const kid=key[0]==='k'&&key.slice(1),kset=KARI.find(k=>k.id===kid);
-    const exam=key[0]==='y'?{key,title:`${YF(key.slice(1))} 真题考点`,queue:yearItems(key.slice(1))}
+    const exam=key==='mist'?{key,title:'错题本',queue:mistItems()}
+      :key[0]==='y'?{key,title:`${YF(key.slice(1))} 真题考点`,queue:yearItems(key.slice(1))}
       :kid?{key,title:kset?kset.title:'仮免 学科 · 全部错题',queue:kariItems(kid)}
       :{key,title:`${TYPES[key][0]} · ${TYPES[key][1]}`,queue:typeItems(key)};
     startSession('exam',null,exam);return}
