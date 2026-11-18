@@ -1028,7 +1028,7 @@ function typeItems(t,n=10){
   if(t==='K')return pool.map(k=>({t:'xk',x:k,y:k.ys[0]}));
   return pool.map(e=>{const ts=e.tags.filter(x=>x.t===t);return {t:'x'+t.toLowerCase(),x:e,y:ts[Math.random()*ts.length|0].y}});
 }
-/* 错题本：真题练习里答错的题自动收进来（存 S.mistakes），在错题本练习时一次答对就移出 */
+/* 错题本：真题练习里答错的题自动收进来（存 S.mistakes），只能手动移出 */
 const mkey=it=>it.t+'|'+(it.t==='gap'?(it.g.id||it.g.k):it.x.w)+'|'+(it.y||'');
 const mtype=t=>TYPES[t==='gap'?'G':t[1].toUpperCase()][0];
 function mitem(k){
@@ -1045,7 +1045,7 @@ function renderMistakes(){
     <p class="note">在真题练习里答错（或跳过）的题会自动加入这里。</p></section>`;
   return `<section class="mbook"><div class="mbook-h"><div><b>错题本</b><span class="num">${ks.length} 道错题</span></div>
     <button class="btn btn-primary btn-sm" data-exam="mist">练习错题${ks.length>20?' 20 题':''}</button></div>
-    <p class="note">真题练习里答错的题会自动加入；在这里练习时一次就答对，就会移出错题本。</p>
+    <p class="note">真题练习里答错的题会自动加入；答对也不会自动移出，点「移出」手动删除。</p>
     <details><summary>查看全部 ${ks.length} 题</summary><div class="ylist">
     ${ks.map(k=>{const it=mitem(k),m=S.mistakes[k];return `<div class="mrow"><span class="ylabel"><b class="jp">${it.t==='gap'?it.g.p:it.x.w}</b><span>${mtype(it.t)}${it.y?' · '+YF(it.y):''} · 错 ${m.n} 次</span></span>
       <button class="mdel" data-unmist="${k}" aria-label="移出错题本">移出</button></div>`}).join('')}
@@ -1132,7 +1132,7 @@ function prep(b){
 function startSession(mode,lesson,exam){
   const q=mode==='lesson'?buildLesson(lesson):mode==='exam'?exam.queue:buildReview();
   if(!q.length){toast('先完成一课再来复习');return}
-  L={mode,lesson,exam,queue:q,idx:0,xp:0,right:0,graded:0,cleared:0,wrongOnce:new Set(),
+  L={mode,lesson,exam,queue:q,idx:0,xp:0,right:0,graded:0,wrongOnce:new Set(),
     newWords:mode==='lesson'?lesson.words.filter(w=>S.words[w.w]==null).length:0};
   $('#lx').hidden=false;document.body.style.overflow='hidden';
   showEx();
@@ -1280,8 +1280,7 @@ function grade(ok){
   if(ok){L.right++;L.xp+=10;if(s.w)S.words[s.w.w]=Math.min(4,(S.words[s.w.w]||0)+1)}
   else{L.queue.push(L.queue[L.idx]);if(s.w&&S.words[s.w.w]!=null)S.words[s.w.w]=Math.max(0,S.words[s.w.w]-1)}
   if(L.mode==='exam'&&s.t!=='tf'){const it=L.queue[L.idx],k=mkey(it);
-    if(!ok){it.miss=true;const m=S.mistakes[k];S.mistakes[k]={n:(m?.n||0)+1,at:Date.now()};save()}
-    else if(L.exam.key==='mist'&&!it.miss&&S.mistakes[k]){delete S.mistakes[k];L.cleared++;save()}}
+    if(!ok){it.miss=true;const m=S.mistakes[k];S.mistakes[k]={n:(m?.n||0)+1,at:Date.now()};save()}}
   document.querySelectorAll('#lx-body button').forEach(b=>{if(!b.dataset.say)b.disabled=true});
   if(s.opts){document.querySelectorAll('#lx-body .opt').forEach(b=>{const v=s.opts[+b.dataset.opt];if(v===s.ans)b.classList.add('right');else if(v===s.sel)b.classList.add('wrong')})}
   if(s.t==='gap'||s.t==='vgap'||s.t==='xc'||s.t==='xk'){const bl=$('#blank');bl.textContent=s.ans;bl.classList.remove('empty-b');bl.style.color=ok?'var(--good)':'var(--bad)';
@@ -1327,7 +1326,7 @@ function finish(){
   $('#lx-bar').style.width='100%';$('#lx-count').textContent='';
   $('#lx-body').innerHTML=`<div class="ex done-screen"><div class="badge">${I.check}</div>
     <h2>${L.mode==='lesson'?'第 '+L.lesson.n+' 课完成！':L.mode==='exam'?'练习完成！':'复习完成！'}</h2>
-    <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.kana?L.lesson.words.map(w=>w.w).join(' '):L.lesson.g.p}`:L.mode==='exam'?(L.exam.key==='mist'?`错题本 · 移出 ${L.cleared} 题 · 还剩 ${mistKeys().length} 题`:L.exam.title):'记忆强度已更新'}</p>
+    <p style="color:var(--muted)">${L.mode==='lesson'?`<span class="jp">${L.lesson.title}</span> · 已掌握 ${L.lesson.kana?L.lesson.words.map(w=>w.w).join(' '):L.lesson.g.p}`:L.mode==='exam'?(L.exam.key==='mist'?`错题本 · 答对 ${L.right}/${L.graded} · 共 ${mistKeys().length} 题`:L.exam.title):'记忆强度已更新'}</p>
     <div class="tiles"><div><b class="num" style="color:var(--sun)">+${gained}</b><span>XP</span></div><div><b class="num" style="color:var(--good)">${acc}%</b><span>正确率</span></div><div><b class="num" style="color:var(--brand)">${L.mode==='lesson'?newW:L.graded}</b><span>${L.mode==='lesson'?'新单词':'作答次数'}</span></div></div>
     <p style="color:var(--muted);font-size:13px" class="num">连续学习 ${streak()} 天 · 今日 ${todayXP()}/${S.goal} XP</p>
     ${doneChoices()}</div>`;
