@@ -332,6 +332,19 @@ mark{background:color-mix(in srgb,var(--brand) 18%,transparent);color:inherit;bo
 .opt.long .k{margin-top:2px}
 .opt u{text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:var(--brand)}
 .sent.big{font-size:30px;text-align:center}
+/* 読解・聴解: passage / script blocks */
+.psg{font-family:var(--f-jp);font-size:16px;line-height:1.95;padding:16px 18px;border-radius:16px;background:var(--sunk);overflow-x:auto}
+.psg p{text-indent:1em;margin:0 0 .35em}
+.psg p.nb,.psg p.r,.psg p.c{text-indent:0}.psg p.r{text-align:right}.psg p.c{text-align:center}
+.psg p.box{border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px}
+.psg .ab{font-family:var(--f-ui);font-weight:900;color:var(--brand);margin:10px 0 4px}.psg .ab:first-child{margin-top:0}
+.psg table,.rq table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 10px;line-height:1.5}
+.psg th,.psg td,.rq th,.rq td{border:1px solid var(--line);padding:4px 6px;text-align:center}
+.psg.script p{text-indent:0}.psg.script b{color:var(--brand)}
+.pintro{font-family:var(--f-jp);font-size:14px;color:var(--muted)}
+.pnote{font-family:var(--f-jp);font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:-10px}
+.q.rq{font-family:var(--f-jp);font-size:17px;font-weight:700;line-height:1.7}
+details.scr summary{cursor:pointer;color:var(--muted);font-weight:800;font-size:13px;margin-bottom:8px}
 .sign{display:flex;justify-content:center;margin:4px 0 14px}.sign svg{width:132px;height:auto}
 body{margin:0}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -368,6 +381,7 @@ body{margin:0}
 <script src="exam-data.js"></script>
 <script src="basic-data.js"></script>
 <script src="year-data.js"></script>
+<script src="rl-data.js"></script>
 <script>
 /* ---------- content: JLPT N2 ---------- */
 const UNITS=[
@@ -913,7 +927,9 @@ try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
 function say(t,rate=.92){
   try{
     if(!('speechSynthesis' in window)){toast('当前浏览器不支持语音播放');return}
-    speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=rate;if(jaVoice)u.voice=jaVoice;speechSynthesis.speak(u);
+    /* long text (listening scripts) is queued sentence by sentence: some browsers cut off a single long utterance */
+    speechSynthesis.cancel();const parts=t.length>60?t.split(/(?<=[。！？\n])/).map(x=>x.trim()).filter(Boolean):[t];
+    parts.forEach(p=>{const u=new SpeechSynthesisUtterance(p);u.lang='ja-JP';u.rate=rate;if(jaVoice)u.voice=jaVoice;speechSynthesis.speak(u)});
   }catch(e){toast('语音播放失败')}
 }
 
@@ -1022,6 +1038,21 @@ function kariItems(id){
   const q=(id==='all'?KARI:KARI.filter(k=>k.id===id)).flatMap(k=>k.qs.map(([no,q,a,exp,zh,img])=>({t:'tf',set:k.title,no,q,a,exp,zh,img})));
   return id==='all'?shuffle(q):q;
 }
+/* 読解・聴解 (rl-data.js RL_SETS): every question becomes one item; kept in test order */
+const RL=window.RL_SETS||[];
+const RT={10:'内容理解（短文）',11:'内容理解（中文）',12:'統合理解',13:'主張理解（長文）',14:'情報検索'};
+const LT={1:'課題理解',2:'ポイント理解',3:'概要理解',4:'即時応答',5:'統合理解'};
+const RQ={};
+RL.forEach(s=>{
+  (s.read||[]).forEach(p=>p.qs.forEach(([n,q,o,a,note])=>{const id=s.y+'-'+n;RQ[id]={t:'rd',id,y:s.y,p,n,q,o,a,note}}));
+  (s.listen||[]).forEach(l=>{const id=s.y+'-L'+l.t+'-'+l.n;
+    if(l.script&&l.script[0]==='@')l={...l,script:(s.scripts||{})[l.script.slice(1)]||''};
+    RQ[id]={t:'ls',id,y:s.y,l,q:l.q,o:l.opts,a:l.a}});
+});
+const rlItems=(y,t)=>Object.values(RQ).filter(x=>x.y===y&&x.t===t);
+const rlName=it=>it.t==='rd'?`問題${it.p.t} 第${it.n}題`:`問題${it.l.t} ${it.l.n}番`;
+const ea=s=>s.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+const para=t=>t.split('\n').map(x=>/^[AB]$/.test(x)?`<div class="ab">${x}</div>`:x[0]==='<'?x:`<p>${x}</p>`).join('');
 function typeItems(t,n=10){
   const pool=shuffle(POOL[t]).slice(0,n);
   if(t==='G')return pool.map(g=>({t:'gap',g,e:g.ex[Math.random()*g.ex.length|0],y:g.ys[Math.random()*g.ys.length|0]}));
@@ -1029,10 +1060,11 @@ function typeItems(t,n=10){
   return pool.map(e=>{const ts=e.tags.filter(x=>x.t===t);return {t:'x'+t.toLowerCase(),x:e,y:ts[Math.random()*ts.length|0].y}});
 }
 /* 错题本：真题练习里答错的题自动收进来（存 S.mistakes），只能手动移出 */
-const mkey=it=>it.t+'|'+(it.t==='gap'?(it.g.id||it.g.k):it.x.w)+'|'+(it.y||'');
-const mtype=t=>TYPES[t==='gap'?'G':t[1].toUpperCase()][0];
+const mkey=it=>it.t+'|'+(it.id||(it.t==='gap'?(it.g.id||it.g.k):it.x.w))+'|'+(it.y||'');
+const mtype=t=>t==='rd'?'読解':t==='ls'?'聴解':TYPES[t==='gap'?'G':t[1].toUpperCase()][0];
 function mitem(k){
   const [t,id,y]=k.split('|');
+  if(t==='rd'||t==='ls')return RQ[id]||null;
   if(t==='gap'){const g=POOL.G.find(g=>(g.id||g.k)===id);return g&&{t,g,e:g.ex[Math.random()*g.ex.length|0],y}}
   if(t==='xk'){const x=KMAP[id];return x&&{t,x,y}}
   const T=t[1]&&t[1].toUpperCase(),x=EXV[id];return x&&POOL[T]&&POOL[T].includes(x)?{t,x,y}:null;
@@ -1047,7 +1079,7 @@ function renderMistakes(){
     <button class="btn btn-primary btn-sm" data-exam="mist">练习错题${ks.length>20?' 20 题':''}</button></div>
     <p class="note">真题练习里答错的题会自动加入；答对也不会自动移出，点「移出」手动删除。</p>
     <details><summary>查看全部 ${ks.length} 题</summary><div class="ylist">
-    ${ks.map(k=>{const it=mitem(k),m=S.mistakes[k];return `<div class="mrow"><span class="ylabel"><b class="jp">${it.t==='gap'?it.g.p:it.x.w}</b><span>${mtype(it.t)}${it.y?' · '+YF(it.y):''} · 错 ${m.n} 次</span></span>
+    ${ks.map(k=>{const it=mitem(k),m=S.mistakes[k];return `<div class="mrow"><span class="ylabel"><b class="jp">${it.id?rlName(it):it.t==='gap'?it.g.p:it.x.w}</b><span>${mtype(it.t)}${it.y?' · '+YF(it.y):''} · 错 ${m.n} 次</span></span>
       <button class="mdel" data-unmist="${k}" aria-label="移出错题本">移出</button></div>`}).join('')}
     </div></details></section>`;
 }
@@ -1073,7 +1105,10 @@ function renderExam(){
   </div></section>
   <section class="xsec"><h2 class="xh">按考试回顾</h2><p class="note">把某一次考试的全部考点做成一套练习，题量与真题的文字・词汇・语法部分相近。</p><div class="ylist">
    ${EXAM_YEARS.slice().reverse().map(y=>`<button class="yrow" data-exam="y${y}"><span class="ylabel"><b>${YF(y)}</b><span class="num">${yearItems(y).length} 题</span></span>${bestOf('y'+y)}</button>`).join('')}
-  </div></section>`;
+  </div></section>
+  ${RL.length?`<section class="xsec"><h2 class="xh">読解・聴解</h2><p class="note">读解是真题原文。听解原文是网上整理的版本，可能和录音有出入；标「自拟」的题，原文是按选项和答案重新编写的。</p><div class="ylist">
+   ${RL.slice().reverse().flatMap(s=>[['r','rd','読解'],['l','ls','聴解']].map(([k,t,nm])=>{const n=rlItems(s.y,t).length;return n?`<button class="yrow" data-exam="${k}${s.y}"><span class="ylabel"><b>${YF(s.y)} · <span class="jp">${nm}</span></b><span class="num">${n} 题</span></span>${bestOf(k+s.y)}</button>`:''})).join('')}
+  </div></section>`:''}`;
 }
 function renderMe(){return `<div class="page-h"><div><h1>我的学习</h1><p>${CO().name} · 每日目标 ${S.goal} XP</p></div></div>${statsHTML(true)}`}
 function render(){
@@ -1124,6 +1159,7 @@ function prep(b){
   if(b.t==='xp'){s.ans=x.syn;s.opts=opts(x.syn,POOL.P.map(e=>e.syn))}
   if(b.t==='xu'){s.ans=x.ex;s.opts=shuffle([x.ex,...shuffle(POOL.U.filter(e=>e!==x&&posG(e.pos)===posG(x.pos))).slice(0,3).map(e=>e.ex.replace(e.w,x.w))])}
   if(b.t==='tf'){s.ans=b.a;s.opts=['o','x']}
+  if(b.t==='rd'||b.t==='ls'){s.opts=b.o;s.ans=b.o[b.a-1]}
   if(b.t==='vgap'){s.ans=b.w.w;s.opts=opts(s.ans,b.w.lesson.words.map(x=>x.w))}
   if(b.t==='order'){const n=b.g.order[1].length;let bank;do{bank=shuffle([...Array(n).keys()])}while(n>1&&bank.every((v,i)=>v===i));s.bank=bank;s.sel=[]}
   if(b.t==='match'){s.left=shuffle(b.ws);s.right=shuffle(b.ws.map(x=>x.m));s.ok=[];s.pl=null;s.pr=null;s.miss=0}
@@ -1212,6 +1248,17 @@ function exHTML(s){
    case 'xu':return `<div class="ex">${xline(s)}<p class="q">「<span class="jp">${x.w}</span>」用法正确的句子是？</p>${optList(s,true,o=>o.replace(x.w,`<u>${x.w}</u>`),'long')}</div>`;
    case 'tf':return `<div class="ex"><div class="eyebrow">${s.set} · 第 ${s.no} 問 · 判断题</div><p class="q">这句话说得对吗？</p>
      ${s.img?`<div class="sign">${SIGNS[s.img]}</div>`:''}<p class="sent">${s.q}</p>${optList(s,true,o=>TF[o])}</div>`;
+   case 'rd':{const p=s.p;return `<div class="ex"><div class="eyebrow">読解 · 問題${p.t} ${RT[p.t]} · ${YF(s.y)} · 第 ${s.n} 題</div>
+     ${p.intro?`<p class="pintro">${p.intro}</p>`:''}<div class="psg">${para(p.text)}</div>${p.notes?`<p class="pnote">${p.notes.replace(/\n/g,'<br>')}</p>`:''}
+     <div class="q rq">${s.q}</div>${optList(s,true,o=>o,'long')}</div>`}
+   case 'ls':{const l=s.l,lines=l.script?l.script.split('\n'):[];
+     /* read aloud like the test: scene, talk, question, then (問題3・4・5-1) the spoken options */
+     const tts=[l.scene,...lines.map(x=>x.replace(/^[^：]{1,3}：/,'')),l.q,...(l.so?l.opts.map((o,i)=>`${i+1}、${o}`):[])].filter(Boolean).join('\n');
+     return `<div class="ex"><div class="eyebrow">聴解 · 問題${l.t} ${LT[l.t]} · ${YF(s.y)} · ${l.n}番${l.own?' · 原文自拟':''}</div>
+     ${l.scene?`<p class="pintro">${l.scene}</p>`:''}${l.so?`<p class="note">这题的选项只在录音里念，卷面上没有印。</p>`:''}
+     ${lines.length?`<div class="say-row"><button class="say-xl" data-say="${ea(tts)}" aria-label="朗读">${I.sound}</button><button class="say-slow" data-say="${ea(tts)}" data-rate=".7" aria-label="慢速朗读">慢速</button></div>
+     <details class="scr"><summary>显示听力原文</summary><div class="psg script">${lines.map(x=>{const m=x.match(/^([^：]{1,3})：(.*)$/);return m?`<p><b>${m[1]}：</b>${m[2]}</p>`:`<p>${x}</p>`}).join('')}</div></details>`:`<p class="note">这道题还没有听力原文。</p>`}
+     ${s.q?`<p class="q rq">${s.q}</p>`:''}${optList(s,true,o=>o,'long')}</div>`}
    case 'card':return `<div class="ex"><div class="eyebrow">${kn?'新假名':'新单词'}</div><div class="wcard">
      ${sayBtn(w.w)}<div class="word"><ruby>${w.w}<rt>${w.r===w.w?'':w.r}</rt></ruby></div><div class="mean">${w.m}</div>${examChip(w.w)}
      <div class="exs">${sayBtn(w.ex,'say','播放例句')}<div><p class="jp">${hl(w.ex,w.w)}</p><p class="zh">${w.exz}</p></div></div></div></div>`;
@@ -1267,6 +1314,7 @@ function detailFor(s){
   if(s.t==='xc'||s.t==='xu')return `${x.ex}${zhLine(`${x.w}（${x.r}）${x.m} · ${x.exz}`)}`;
   if(s.t==='xp')return `${x.w} ≈ ${x.syn}${zhLine(`${x.r} · ${x.m}`)}`;
   if(s.t==='tf')return `正解：${s.ans==='o'?'○':'×'}　${s.exp}${zhLine(s.zh)}`;
+  if(s.t==='rd'||s.t==='ls')return `${s.a}　${s.ans}${s.note?zhLine(s.note):''}`;
   if(s.t==='xr'||s.t==='xh'||s.t==='xk')return `${x.w}（${x.r}）${zhLine(x.m)}`;
   if(s.t==='gap')return `${s.e[0].replace('＿＿',s.ans)}<br><span style="font-family:var(--f-ui);color:var(--muted)">${s.e[1]}</span>`;
   if(s.t==='vgap')return `${w.ex}<br><span style="font-family:var(--f-ui);color:var(--muted)">${w.exz}</span>`;
@@ -1283,6 +1331,7 @@ function grade(ok){
     if(!ok){it.miss=true;const m=S.mistakes[k];S.mistakes[k]={n:(m?.n||0)+1,at:Date.now()};save()}}
   document.querySelectorAll('#lx-body button').forEach(b=>{if(!b.dataset.say)b.disabled=true});
   if(s.opts){document.querySelectorAll('#lx-body .opt').forEach(b=>{const v=s.opts[+b.dataset.opt];if(v===s.ans)b.classList.add('right');else if(v===s.sel)b.classList.add('wrong')})}
+  if(s.t==='ls'){const d=$('#lx-body details.scr');if(d)d.open=true}
   if(s.t==='gap'||s.t==='vgap'||s.t==='xc'||s.t==='xk'){const bl=$('#blank');bl.textContent=s.ans;bl.classList.remove('empty-b');bl.style.color=ok?'var(--good)':'var(--bad)';
     say(s.t==='xc'?s.x.ex:s.t==='xk'?s.x.w:(s.t==='gap'?s.e[0]:s.w.ex).replace('＿＿',s.ans))}
   else if(s.t==='order')say(s.g.order[1].join(''));
@@ -1347,6 +1396,7 @@ document.addEventListener('click',e=>{
     const kid=key[0]==='k'&&key.slice(1),kset=KARI.find(k=>k.id===kid);
     const exam=key==='mist'?{key,title:'错题本',queue:mistItems()}
       :key[0]==='y'?{key,title:`${YF(key.slice(1))} 真题考点`,queue:yearItems(key.slice(1))}
+      :key[0]==='r'||key[0]==='l'?{key,title:`${YF(key.slice(1))} ${key[0]==='r'?'読解':'聴解'}`,queue:rlItems(key.slice(1),key[0]==='r'?'rd':'ls')}
       :kid?{key,title:kset?kset.title:'仮免 学科 · 全部错题',queue:kariItems(kid)}
       :{key,title:`${TYPES[key][0]} · ${TYPES[key][1]}`,queue:typeItems(key)};
     startSession('exam',null,exam);return}

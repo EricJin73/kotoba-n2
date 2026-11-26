@@ -1,6 +1,6 @@
 // ことば道 N2 service worker: offline shell + cached Google Fonts.
 // Bump VERSION whenever index.html or other app files change.
-const VERSION = 'v18';
+const VERSION = 'v19';
 const APP = `kotoba-app-${VERSION}`;
 const FONTS = 'kotoba-fonts';
 const SHELL = [
@@ -9,6 +9,7 @@ const SHELL = [
   './exam-data.js',
   './basic-data.js',
   './year-data.js',
+  './rl-data.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
